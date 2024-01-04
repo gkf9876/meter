@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h5 class="my-3 border-bottom pb-2">할일등록</h5>
+    <form method="post">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+        <div class="mb-3">
+            <label for="parent" class="form-label">상위값</label>
+            <select class="form-control"  name="parent" id="parent">
+                <option value="" {% if form.parent.value is None %}selected{% endif %}>---------</option>
+                {% for choice in form.parent.field.choices %}
+                    <option value="{{ choice.0 }}" {% if choice.0 == form.parent.value %}selected{% endif %}>{{ choice.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="subject" class="form-label">할일</label>
+            <input type="text" class="form-control" name="subject" id="subject" value="{{ form.subject.value|default_if_none:'' }}">
+        </div>
+        <button type="submit" class="btn btn-primary">저장하기</button>
+    </form>
+</div>
+{% endblock %}

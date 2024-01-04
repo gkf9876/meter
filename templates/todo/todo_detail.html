@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-3">
+    <!-- message 표시 -->
+    {% if messages %}
+    <div class="alert alert-danger my-3" role="alert">
+        {% for message in messages %}
+        <strong>{{ message.tags }}</strong>
+        <ul>
+            <li>{{ message.message }}</li>
+        </ul>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <!-- 할일 -->
+    <h2 class="border-bottom py-2">{{ todo.subject }}</h2>
+    <div class="my-3">
+        {% if request.user == todo.author %}
+            <a href="{% url 'todo:todo_modify' todo.id %}" class="btn btn-sm btn-outline-secondary" >수정</a>
+            <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'todo:todo_delete' todo.id %}">삭제</a>
+        {% endif %}
+    </div>
+    <!-- 할일 상세 -->
+    <h5 class="border-bottom my-3 py-2">{{ todo.tododetail_set.count }}개의 한일이 있습니다.</h5>
+    {% for todo_detail in todo.tododetail_set.all %}
+    <div class="card my-3">
+        <div class="card-body">
+            <div class="card-text" style="white-space: pre-line;">{{ todo_detail.content }}</div>
+            <div class="d-flex justify-content-end">
+                <div class="badge bg-light text-dark p-2">
+                    {{ todo_detail.date }}
+                </div>
+            </div>
+            <div class="my-3">
+                {% if request.user == todo_detail.author %}
+                    <a href="{% url 'todo:tododetail_modify' todo_detail.id %}" class="btn btn-sm btn-outline-secondary" >수정</a>
+                    <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'todo:tododetail_delete' todo_detail.id %}">삭제</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <form action="{% url 'todo:tododetail_create' todo.id %}" method="post" class="my-3">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+        <div class="mb-3">
+            <input type="date" {% if not user.is_authenticated %}disabled{% endif %} class="form-control" name="date" id="date" value="{{ form.date.value|default_if_none:'' }}">
+            <textarea {% if not user.is_authenticated %}disabled{% endif %} name="content" id="content" class="form-control" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
+        </div>
+        <input type="submit" value="한일등록" class="btn btn-primary">
+    </form>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    const delete_elements = document.getElementsByClassName("delete");
+    Array.from(delete_elements).forEach(function(element){
+        element.addEventListener('click', function(){
+            if(confirm("정말로 삭제하시겠습니까?")){
+                location.href = this.dataset.uri;
+            }
+        });
+    });
+</script>
+{% endblock %}

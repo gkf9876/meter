@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card text-center">
+    <div class="card-header">
+        <ul class="nav nav-pills card-header-pills">
+            {% if study_list %}
+                {% for study in study_list %}
+                    <li class="nav-item">
+                        <a class="list nav-link" data-id="{{ study.id }}">{{ forloop.counter }}: {{ study.name }}</a>
+                    </li>
+                {% endfor %}
+            {% else %}
+            {% endif %}
+        </ul>
+        <input type="hidden" id="study_id">
+        <input type="hidden" id="meter_id">
+    </div>
+    <div class="p-3 mb-2 bg-primary text-white">
+        <p name="timer" id="timer" style="font-size:15vw;">00:00:00</p>
+    </div>
+    <div class="card-body">
+        <button class="start btn btn-primary">시작</button>
+        <button class="stop btn btn-primary" disabled>중지</button>
+        <button class="end btn btn-primary" disabled>종료</button>
+
+        <div class="mt-5 mb-3">
+            <label for="memo" class="form-label">메모</label>
+            <textarea class="form-control" name="memo" id="memo" rows="10"></textarea>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    var seconds = 0;
+    var interval = null;
+
+    // csrttoken 받아오기. (django 공식문서 https://docs.djangoproject.com/en/2.2/ref/csrf/)
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const list_elements = document.getElementsByClassName("list");
+    Array.from(list_elements).forEach(function(element){
+        element.addEventListener('click', function(){
+            Array.from(list_elements).forEach(function(element){
+                element.classList.remove("active");
+            });
+
+            element.classList.add("active");
+            document.getElementById("study_id").value = this.dataset.id;
+        });
+    });
+
+    const start_elements = document.getElementsByClassName("start");
+    Array.from(start_elements).forEach(function(element){
+        element.addEventListener('click', function(){
+            if(!document.getElementById("study_id").value){
+                alert("공부 항목을 선택하세요.")
+                return;
+            }
+
+            var csrftoken = getCookie('csrftoken');
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", '/meter/create/', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);  // CSRF
+            xhr.onreadystatechange = function(){
+                if(xhr.readyState === XMLHttpRequest.DONE){
+                    if(xhr.status === 200){
+                        var jsonResponse = JSON.parse(xhr.responseText);
+                        document.getElementById("meter_id").value = jsonResponse.meter_id;
+                        console.log('데이터베이스 값이 성공적으로 업데이트되었습니다.');
+                    }else{
+                        console.error('데이터베이스 값을 업데이트하는 중 오류가 발생했습니다.');
+                    }
+                }
+            };
+            var data = 'study_id=' + document.getElementById('study_id').value;
+            xhr.send(data);
+
+            interval = setInterval(function(){
+                seconds += 1;
+                var hour = Math.floor(seconds / 3600);
+                var minute = Math.floor((seconds % 3600) / 60);
+                var remainingSecond = seconds % 60;
+
+                var hours = (hour < 10)? "0" + hour : hour;
+                var minutes = (minute < 10)? "0" + minute : minute;
+                var remainingSeconds = (remainingSecond < 10)? "0" + remainingSecond : remainingSecond;
+
+                document.getElementById("timer").innerHTML = hours + ":" + minutes + ":" + remainingSeconds;
+
+                if(remainingSecond % 60 == 0){
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", '/meter/update/', true);
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);  // CSRF
+                    xhr.onreadystatechange = function(){
+                        if(xhr.readyState === XMLHttpRequest.DONE){
+                            if(xhr.status === 200){
+                                var response = xhr.responseText;
+                                console.log('데이터베이스 값이 성공적으로 업데이트되었습니다.');
+                            }else{
+                                document.getElementById("timer").innerHTML = "##:##:##";
+                                console.error('데이터베이스 값을 업데이트하는 중 오류가 발생했습니다.');
+                            }
+                        }
+                    };
+                    var data = 'meter_id=' + document.getElementById('meter_id').value;
+                    data += '&memo=' + document.getElementById('memo').value;
+
+                    xhr.send(data);
+                }
+            }, 1000);
+
+            Array.from(start_elements).forEach(function(element){
+                element.disabled = true;
+            });
+
+            Array.from(stop_elements).forEach(function(element){
+                element.disabled = false;
+            });
+
+            Array.from(end_elements).forEach(function(element){
+                element.disabled = false;
+            });
+        });
+    });
+
+    const stop_elements = document.getElementsByClassName("stop");
+    Array.from(stop_elements).forEach(function(element){
+        element.addEventListener('click', function(){
+            if(!document.getElementById("study_id").value){
+                alert("공부 항목을 선택하세요.")
+                return;
+            }
+
+            clearInterval(interval);
+
+            var csrftoken = getCookie('csrftoken');
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", '/meter/update/', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);  // CSRF
+            xhr.onreadystatechange = function(){
+                if(xhr.readyState === XMLHttpRequest.DONE){
+                    if(xhr.status === 200){
+                        var response = xhr.responseText;
+                        seconds = 0;
+                        console.log('데이터베이스 값이 성공적으로 업데이트되었습니다.');
+                    }else{
+                        document.getElementById("timer").innerHTML = "##:##:##";
+                        console.error('데이터베이스 값을 업데이트하는 중 오류가 발생했습니다.');
+                    }
+                }
+            };
+            var data = 'meter_id=' + document.getElementById('meter_id').value;
+            data += '&memo=' + document.getElementById('memo').value;
+            xhr.send(data);
+
+            Array.from(start_elements).forEach(function(element){
+                element.disabled = false;
+            });
+
+            Array.from(stop_elements).forEach(function(element){
+                element.disabled = true;
+            });
+
+            Array.from(end_elements).forEach(function(element){
+                element.disabled = false;
+            });
+        });
+    });
+
+    const end_elements = document.getElementsByClassName("end");
+    Array.from(end_elements).forEach(function(element){
+        element.addEventListener('click', function(){
+            if(!document.getElementById("study_id").value){
+                alert("공부 항목을 선택하세요.")
+                return;
+            }
+
+            var csrftoken = getCookie('csrftoken');
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", '/meter/update/', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);  // CSRF
+            xhr.onreadystatechange = function(){
+                if(xhr.readyState === XMLHttpRequest.DONE){
+                    if(xhr.status === 200){
+                        document.getElementById("timer").innerHTML = "00:00:00";
+
+                        var response = xhr.responseText;
+                        console.log('데이터베이스 값이 성공적으로 업데이트되었습니다.');
+                    }else{
+                        document.getElementById("timer").innerHTML = "##:##:##";
+                        console.error('데이터베이스 값을 업데이트하는 중 오류가 발생했습니다.');
+                    }
+                }
+            };
+            var data = 'meter_id=' + document.getElementById('meter_id').value;
+            data += '&memo=' + document.getElementById('memo').value;
+            xhr.send(data);
+
+            Array.from(start_elements).forEach(function(element){
+                element.disabled = false;
+            });
+
+            Array.from(stop_elements).forEach(function(element){
+                element.disabled = true;
+            });
+
+            Array.from(end_elements).forEach(function(element){
+                element.disabled = true;
+            });
+        });
+    });
+</script>
+{% endblock %}

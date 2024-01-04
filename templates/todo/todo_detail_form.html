@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- 할일 상세 수정 -->
+<div class="container my-3">
+    <form method="post">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+        <div class="mb-3">
+            <label for="date" class="form-label">한일</label>
+            <input type="date" class="form-control" name="date" id="date">{{ form.date.value|default_if_none:'' }}</input>
+            <label for="content" class="form-label">한일</label>
+            <textarea class="form-control" name="content" id="content" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
+            <button type="submit" class="btn btn-primary">저장하기</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
