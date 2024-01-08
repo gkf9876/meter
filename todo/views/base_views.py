@@ -3,9 +3,12 @@ from django.shortcuts import render, get_object_or_404
 
 from ..models import Todo
 
+import logging
+logger = logging.getLogger('todo')
 
 @login_required(login_url='common:login')
 def index(request):
+    logger.info("INFO 레벨로 출력")
     context = {'todo_tree': Todo.objects.filter(author_id=request.user.id)}
     return render(request, 'todo/todo_list.html', context)
 
