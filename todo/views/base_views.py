@@ -14,6 +14,6 @@ def index(request):
 
 @login_required(login_url='common:login')
 def detail(request, todo_id):
-    todo = get_object_or_404(Todo, pk=todo_id)
+    todo = get_object_or_404(Todo, pk=todo_id, author_id=request.user.id)
     context = {'todo': todo}
     return render(request, 'todo/todo_detail.html', context)
