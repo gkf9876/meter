@@ -161,7 +161,7 @@ LOGGING = {
         'console':{
             'level': 'INFO',
             'filters': ['require_debug_true'],
-            'class': 'logging.StramHandler',
+            'class': 'logging.StreamHandler',
         },
         'django.server':{
             'level': 'INFO',
