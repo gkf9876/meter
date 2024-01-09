@@ -19,6 +19,9 @@
                     {% else %}
                         <li class="list-group-item">
                             <a href="{% url 'todo:todo_detail' node.id %}">{{ node.subject }}</a>
+                            {% if node.tododetail_set.count > 0 %}
+                            <span class="text-danger small mx-2">{{ node.tododetail_set.count }}</span>
+                            {% endif %}
                         </li>
                     {% endif %}
                 {% endrecursetree %}

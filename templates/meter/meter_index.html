@@ -37,6 +37,7 @@
 <script type="text/javascript">
     var seconds = 0;
     var interval = null;
+    var seconds_list = [];
 
     // csrttoken 받아오기. (django 공식문서 https://docs.djangoproject.com/en/2.2/ref/csrf/)
     function getCookie(name) {
@@ -58,6 +59,11 @@
     const study_elements = document.getElementsByClassName("study-list");
     Array.from(study_elements).forEach(function(element){
         element.addEventListener('click', function(){
+            var timer = document.getElementById("timer").innerHTML;
+            if(timer != '00:00:00'){
+                alert("타이머가 작동중입니다.");
+                return;
+            }
             Array.from(study_elements).forEach(function(element){
                 element.classList.remove("active");
             });
@@ -78,7 +84,7 @@
             var csrftoken = getCookie('csrftoken');
             var xhr = new XMLHttpRequest();
             xhr.open("POST", '/meter/create/', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.setRequestHeader("X-CSRFToken", csrftoken);  // CSRF
             xhr.onreadystatechange = function(){
                 if(xhr.readyState === XMLHttpRequest.DONE){
@@ -91,8 +97,11 @@
                     }
                 }
             };
-            var data = 'study_id=' + document.getElementById('study_id').value;
-            xhr.send(data);
+            var data = {
+                study_id: document.getElementById('study_id').value,
+                memo: document.getElementById('memo').value
+            }
+            xhr.send(JSON.stringify(data));
 
             interval = setInterval(function(){
                 seconds += 1;
@@ -109,12 +118,16 @@
                 if(remainingSecond % 60 == 0){
                     var xhr = new XMLHttpRequest();
                     xhr.open("POST", '/meter/update/', true);
-                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    xhr.setRequestHeader('Content-Type', 'application/json');
                     xhr.setRequestHeader("X-CSRFToken", csrftoken);  // CSRF
                     xhr.onreadystatechange = function(){
                         if(xhr.readyState === XMLHttpRequest.DONE){
                             if(xhr.status === 200){
-                                var response = xhr.responseText;
+                                var jsonResponse = JSON.parse(xhr.responseText);
+                                var start_date = new Date(jsonResponse.start_date);
+                                var end_date = new Date(jsonResponse.end_date);
+
+                                document.getElementById("meter_id").value = jsonResponse.meter_id;
                                 console.log('데이터베이스 값이 성공적으로 업데이트되었습니다.');
                             }else{
                                 document.getElementById("timer").innerHTML = "##:##:##";
@@ -122,10 +135,11 @@
                             }
                         }
                     };
-                    var data = 'meter_id=' + document.getElementById('meter_id').value;
-                    data += '&memo=' + document.getElementById('memo').value;
-
-                    xhr.send(data);
+                    var data = {
+                        meter_id: document.getElementById('meter_id').value,
+                        memo: document.getElementById('memo').value
+                    }
+                    xhr.send(JSON.stringify(data));
                 }
             }, 1000);
 
@@ -156,13 +170,28 @@
             var csrftoken = getCookie('csrftoken');
             var xhr = new XMLHttpRequest();
             xhr.open("POST", '/meter/update/', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.setRequestHeader("X-CSRFToken", csrftoken);  // CSRF
             xhr.onreadystatechange = function(){
                 if(xhr.readyState === XMLHttpRequest.DONE){
                     if(xhr.status === 200){
-                        var response = xhr.responseText;
-                        seconds = 0;
+                        var jsonResponse = JSON.parse(xhr.responseText);
+                        var start_date = new Date(jsonResponse.start_date);
+                        var end_date = new Date(jsonResponse.end_date);
+
+                        document.getElementById("meter_id").value = jsonResponse.meter_id;
+
+                        var timeDifference = end_date - start_date;
+
+                        var second_difference = Math.floor(timeDifference / 1000);
+
+                        seconds_list.push(second_difference);
+                        var sum = 0;
+                        for(var i=0; i<seconds_list.length; i++){
+                            sum += seconds_list[i];
+                        }
+                        seconds = sum;
+
                         console.log('데이터베이스 값이 성공적으로 업데이트되었습니다.');
                     }else{
                         document.getElementById("timer").innerHTML = "##:##:##";
@@ -170,9 +199,11 @@
                     }
                 }
             };
-            var data = 'meter_id=' + document.getElementById('meter_id').value;
-            data += '&memo=' + document.getElementById('memo').value;
-            xhr.send(data);
+            var data = {
+                meter_id: document.getElementById('meter_id').value,
+                memo: document.getElementById('memo').value
+            }
+            xhr.send(JSON.stringify(data));
 
             Array.from(start_elements).forEach(function(element){
                 element.disabled = false;
@@ -196,17 +227,25 @@
                 return;
             }
 
+            clearInterval(interval);
+
             var csrftoken = getCookie('csrftoken');
             var xhr = new XMLHttpRequest();
             xhr.open("POST", '/meter/update/', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.setRequestHeader("X-CSRFToken", csrftoken);  // CSRF
             xhr.onreadystatechange = function(){
                 if(xhr.readyState === XMLHttpRequest.DONE){
                     if(xhr.status === 200){
-                        document.getElementById("timer").innerHTML = "00:00:00";
+                        var jsonResponse = JSON.parse(xhr.responseText);
+                        var start_date = new Date(jsonResponse.start_date);
+                        var end_date = new Date(jsonResponse.end_date);
 
-                        var response = xhr.responseText;
+                        document.getElementById("meter_id").value = jsonResponse.meter_id;
+
+                        seconds = 0;
+                        seconds_list = [];
+                        document.getElementById("timer").innerHTML = "00:00:00";
                         console.log('데이터베이스 값이 성공적으로 업데이트되었습니다.');
                     }else{
                         document.getElementById("timer").innerHTML = "##:##:##";
@@ -214,9 +253,11 @@
                     }
                 }
             };
-            var data = 'meter_id=' + document.getElementById('meter_id').value;
-            data += '&memo=' + document.getElementById('memo').value;
-            xhr.send(data);
+            var data = {
+                meter_id: document.getElementById('meter_id').value,
+                memo: document.getElementById('memo').value
+            }
+            xhr.send(JSON.stringify(data));
 
             Array.from(start_elements).forEach(function(element){
                 element.disabled = false;

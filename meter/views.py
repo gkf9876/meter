@@ -1,5 +1,7 @@
+import json
+
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, ExpressionWrapper, F, fields, Func
+from django.db.models import Sum, ExpressionWrapper, F, fields, DateTimeField
 from django.db.models.functions import TruncDate
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
@@ -17,46 +19,51 @@ def index(request):
 
 def create(request):
     if request.method == 'POST':
-        study_id = request.POST.get('study_id', None)
-
+        json_data = json.loads(request.body.decode('utf-8'))
+        study_id = json_data.get('study_id', None)
+        memo = json_data.get('memo', None)
         if not study_id:
             return JsonResponse({'error': 'Invalid study_id'}, status=400)
-
         try:
             study = get_object_or_404(Study, id=study_id)
-
             meter = Meter()
             meter.author = request.user
             meter.start_date = timezone.now()
             meter.end_date = timezone.now()
+            meter.memo = memo
             meter.study = study
             meter.save()
-
-            response_data = {'meter_id':meter.id, 'message': '데이터베이스 값이 성공적으로 업데이트되었습니다.'}
+            response_data = {'meter_id':meter.id, 'start_date':meter.start_date, 'end_date':meter.end_date, 'message': '데이터베이스 값이 성공적으로 업데이트되었습니다.'}
         except Study.DoesNotExist:
             return JsonResponse({'error': 'Data not found'}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON format'}, status=400)
         return JsonResponse(response_data)
     else:
+        print("Invalid request")
         return JsonResponse({'error': 'Invalid request'}, status=400)
 
 def update(request):
     if request.method == 'POST':
-        meter_id = request.POST.get('meter_id', None)
-
+        json_data = json.loads(request.body.decode('utf-8'))
+        meter_id = json_data.get('meter_id', None)
+        memo = json_data.get('memo', None)
         if not meter_id:
             return JsonResponse({'error': 'Invalid meter_id'}, status=400)
-
         try:
             meter = get_object_or_404(Meter, id=meter_id)
             meter.author = request.user
             meter.end_date = timezone.now()
+            meter.memo = memo
             meter.save()
-
-            response_data = {'message': '데이터베이스 값이 성공적으로 업데이트되었습니다.'}
+            response_data = {'meter_id':meter.id, 'start_date':meter.start_date, 'end_date' : meter.end_date, 'message': '데이터베이스 값이 성공적으로 업데이트되었습니다.'}
             return JsonResponse(response_data)
         except Meter.DoesNotExist:
             return JsonResponse({'error': 'Data not found'}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON format'}, status=400)
     else:
+        print("Invalid request")
         return JsonResponse({'error': 'Invalid request'})
 
 @login_required(login_url='common:login')
@@ -72,9 +79,9 @@ def chart(request):
         start_date = today - timezone.timedelta(days=15)
         seconds_expression = ExpressionWrapper(F('end_date') - F('start_date'),output_field=fields.DurationField())
         meter_list = (Meter.objects.filter(author_id=request.user.id, study_id=study.id, end_date__range=(start_date, today))
-                      .annotate(truncated_date=TruncDate('end_date'))
-                      .values('truncated_date')
                       .annotate(day_seconds=seconds_expression)
+                      .annotate(truncated_date=TruncDate('end_date', output_field=DateTimeField()))
+                      .values('truncated_date')
                       .annotate(total_seconds=Sum('day_seconds'))
                       .order_by('truncated_date'))
         truncated_date = meter_list.values_list('truncated_date', flat=True)
