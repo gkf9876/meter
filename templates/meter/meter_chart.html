@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-3">
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-pills card-header-pills">
+                {% if study_list %}
+                    {% for study in study_list %}
+                        <li class="nav-item">
+                            {% if study.id == study_id %}
+                                <a class="study-list nav-link active" data-id="{{ study.id }}">
+                                    {{ forloop.counter }}: {{ study.name }}
+                                </a>
+                            {% else %}
+                                <a class="study-list nav-link" data-id="{{ study.id }}">
+                                    {{ forloop.counter }}: {{ study.name }}
+                                </a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                {% else %}
+                {% endif %}
+            </ul>
+        <div class="card-body">
+            <canvas id="myChart" width="400" height="400"></canvas>
+        </div>
+    </div>
+    <form id="searchForm" method="get" action="{% url 'meter:meter_chart' %}">
+        <input type="hidden" id="study_id" name="study_id" value="{{ study_id|default_if_none:'' }}">
+    </form>
+</div>
+{% endblock %}
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const activeStudyList = document.querySelector(".study-list.active");
+    if(activeStudyList){
+        // 차트 데이터와 옵션 설정
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar', // 차트 타입 (예: 막대 그래프)
+            data: {
+                labels: {{ labels|safe }},
+                datasets: [{
+                    label: '공부시간(분)',
+                    data: {{ data|safe }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    document.getElementById('myChart').style.height = '40vw';
+
+    const study_elements = document.getElementsByClassName("study-list");
+    Array.from(study_elements).forEach(function(element){
+        element.addEventListener('click', function(){
+            document.getElementById('study_id').value = this.dataset.id;
+            document.getElementById('searchForm').submit();
+        });
+    });
+</script>
+{% endblock %}

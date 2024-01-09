@@ -1,33 +1,36 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="card text-center">
-    <div class="card-header">
-        <ul class="nav nav-pills card-header-pills">
-            {% if study_list %}
-                {% for study in study_list %}
-                    <li class="nav-item">
-                        <a class="list nav-link" data-id="{{ study.id }}">{{ forloop.counter }}: {{ study.name }}</a>
-                    </li>
-                {% endfor %}
-            {% else %}
-            {% endif %}
-        </ul>
-        <input type="hidden" id="study_id">
-        <input type="hidden" id="meter_id">
-    </div>
-    <div class="p-3 mb-2 bg-primary text-white">
-        <p name="timer" id="timer" style="font-size:15vw;">00:00:00</p>
-    </div>
-    <div class="card-body">
-        <button class="start btn btn-primary">시작</button>
-        <button class="stop btn btn-primary" disabled>중지</button>
-        <button class="end btn btn-primary" disabled>종료</button>
+<div class="container my-3">
+    <div class="card text-center mb-3"">
+        <div class="card-header">
+            <ul class="nav nav-pills card-header-pills">
+                {% if study_list %}
+                    {% for study in study_list %}
+                        <li class="nav-item">
+                            <a class="study-list nav-link" data-id="{{ study.id }}">{{ forloop.counter }}: {{ study.name }}</a>
+                        </li>
+                    {% endfor %}
+                {% else %}
+                {% endif %}
+            </ul>
+            <input type="hidden" id="study_id">
+            <input type="hidden" id="meter_id">
+        </div>
+        <div class="p-3 mb-2 bg-primary text-white">
+            <p name="timer" id="timer" style="font-size:15vw;">00:00:00</p>
+        </div>
+        <div class="card-body">
+            <button class="start btn btn-primary">시작</button>
+            <button class="stop btn btn-primary" disabled>중지</button>
+            <button class="end btn btn-primary" disabled>종료</button>
 
-        <div class="mt-5 mb-3">
-            <label for="memo" class="form-label">메모</label>
-            <textarea class="form-control" name="memo" id="memo" rows="10"></textarea>
+            <div class="mt-5 mb-3">
+                <label for="memo" class="form-label">메모</label>
+                <textarea class="form-control" name="memo" id="memo" rows="10"></textarea>
+            </div>
         </div>
     </div>
+    <a href="{% url 'meter:meter_chart' %}" class="btn btn-primary">차트 확인</a>
 </div>
 {% endblock %}
 {% block script %}
@@ -52,10 +55,10 @@
         return cookieValue;
     }
 
-    const list_elements = document.getElementsByClassName("list");
-    Array.from(list_elements).forEach(function(element){
+    const study_elements = document.getElementsByClassName("study-list");
+    Array.from(study_elements).forEach(function(element){
         element.addEventListener('click', function(){
-            Array.from(list_elements).forEach(function(element){
+            Array.from(study_elements).forEach(function(element){
                 element.classList.remove("active");
             });
 
