@@ -26,6 +26,3 @@ class TodoDetailForm(forms.ModelForm):
             'date': '날짜',
             'content': '내용',
         }
-        widgets = {
-            'content': TinyMCE(attrs={'cols': 80, 'rows': 30}),
-        }
