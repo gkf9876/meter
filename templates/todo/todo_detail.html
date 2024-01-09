@@ -25,7 +25,7 @@
     {% for todo_detail in todo.tododetail_set.all %}
     <div class="card my-3">
         <div class="card-body">
-            <div class="card-text" style="white-space: pre-line;">{{ todo_detail.content }}</div>
+            <div class="card-text" style="white-space: pre-line;">{{ todo_detail.content|safe }}</div>
             <div class="d-flex justify-content-end">
                 <div class="badge bg-light text-dark p-2">
                     {{ todo_detail.date }}
@@ -45,6 +45,8 @@
         {% include "form_errors.html" %}
         <div class="mb-3">
             <input type="date" {% if not user.is_authenticated %}disabled{% endif %} class="form-control" name="date" id="date" value="{{ form.date.value|default_if_none:'' }}">
+        </div>
+        <div class="mb-3">
             <textarea {% if not user.is_authenticated %}disabled{% endif %} name="content" id="content" class="form-control" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
         </div>
         <input type="submit" value="한일등록" class="btn btn-primary">
@@ -52,6 +54,7 @@
 </div>
 {% endblock %}
 {% block script %}
+<script src="https://cdn.tiny.cloud/1/c9h82kl7bvgxzpopk85v2c9wu1nyqyev8vrhl9ll2a7gdxfg/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
 <script type="text/javascript">
     const delete_elements = document.getElementsByClassName("delete");
     Array.from(delete_elements).forEach(function(element){
@@ -60,6 +63,13 @@
                 location.href = this.dataset.uri;
             }
         });
+    });
+
+    tinymce.init({
+        selector:'#content',
+        menubar: false,
+        statusbar: false,
+        toolbar1: 'formatselect | bold italic strikethrough forecolor backcolor | link | alignleft aligncenter alignright alignjustify | numlist bullist outdent indent | removeformat'
     });
 </script>
 {% endblock %}

@@ -25,6 +25,7 @@ urlpatterns = [
     path('meter/', include('meter.urls')),
     path('todo/', include('todo.urls')),
     path('common/', include('common.urls')),
+    path('tinymce/', include('tinymce.urls')),
     path('', views.index, name='index'),
 ]
 

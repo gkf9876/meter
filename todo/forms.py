@@ -1,6 +1,7 @@
 from django import forms
 from mptt.forms import TreeNodeChoiceField
 from todo.models import Todo, TodoDetail
+from tinymce.widgets import TinyMCE
 
 class TodoForm(forms.ModelForm):
     parent = TreeNodeChoiceField(queryset=None, required=False)

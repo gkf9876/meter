@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
+from tinymce.models import HTMLField
 
 
 class Todo(MPTTModel):
@@ -23,7 +24,7 @@ class TodoDetail(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     todo = models.ForeignKey(Todo, on_delete=models.CASCADE)
     date = models.DateTimeField()
-    content = models.TextField()
+    content = HTMLField()
     use_yn = models.CharField(max_length=2, default='Y')
     create_date = models.DateTimeField()
     update_date = models.DateTimeField(null=True, blank=True)
