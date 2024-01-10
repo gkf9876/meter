@@ -6,12 +6,8 @@
     <table class="table">
         <thead>
         <tr class="text-center table-dark">
-            <th>
-                <input type="checkbox" id="action-toggle">
-            </th>
-            <th></th>
-            <th>TITLE</th>
-            <th>SUBJECT</th>
+            <th style="width: 10px;"></th>
+            <th>할일</th>
         </tr>
         </thead>
         <tbody>
@@ -19,9 +15,6 @@
                 {% recursetree todo_tree %}
                     {% if not node.is_leaf_node %}
                         <tr class="text-center" data-level="{{ node.level }}" data-pk="{{ node.id }}" data-pid="{{ node.parent_id|default_if_none:'' }}" draggable="true">
-                            <td>
-                                <input type="checkbox" id="action-toggle">
-                            </td>
                             <td class="text-start">
                                 {% if node.children.exists > 0 %}
                                 <div class="tree-node children" data-pk="{{ node.id }}" data-level="{{ node.level }}"></div>
@@ -37,14 +30,10 @@
                                     {% endif %}
                                 </div>
                             </td>
-                            <td class="text-start">{{ node.subject }}</td>
                         </tr>
                         {{ children }}
                     {% else %}
                         <tr class="text-center" data-level="{{ node.level }}" data-pk="{{ node.id }}" data-pid="{{ node.parent_id|default_if_none:'' }}" draggable="true">
-                            <td>
-                                <input type="checkbox" id="action-toggle">
-                            </td>
                             <td class="text-start">
                                 {% if node.children.exists %}
                                 <div class="tree-node children" data-pk="{{ node.id }}" data-level="{{ node.level }}" data-url=""></div>
@@ -60,13 +49,12 @@
                                     {% endif %}
                                 </div>
                             </td>
-                            <td class="text-start">{{ node.subject }}</td>
                         </tr>
                     {% endif %}
                 {% endrecursetree %}
             {% else %}
                 <tr>
-                    <td colspan="4">할일이 없습니다.</td>
+                    <td colspan="2">할일이 없습니다.</td>
                 </tr>
             {% endif %}
         </tbody>
