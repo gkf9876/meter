@@ -5,3 +5,23 @@ textarea{
 input[type=submit]{
     margin-top: 10px;
 }
+.tree-node {
+    cursor: pointer;
+}
+.tree-node.children {
+    background-image: url(/static/icon/chevron-down.svg);
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+}
+.tree-node.closed {
+    background-image: url(/static/icon/chevron-right.svg);
+    width: 16px;
+    height: 16px;
+}
+.drag-handle {
+    cursor: move;
+}
+.highlight {
+    border-bottom: 2px solid red;
+}

@@ -1,37 +1,159 @@
 {% extends 'base.html' %}
+{% load todo_filter %}
 {% block content %}
 {% load mptt_tags %}
 <div class="container my-3">
-    <div class="card mb-3">
-        <ul class="list-group list-group-flush">
+    <table class="table">
+        <thead>
+        <tr class="text-center table-dark">
+            <th>
+                <input type="checkbox" id="action-toggle">
+            </th>
+            <th></th>
+            <th>TITLE</th>
+            <th>SUBJECT</th>
+        </tr>
+        </thead>
+        <tbody>
             {% if todo_tree %}
                 {% recursetree todo_tree %}
                     {% if not node.is_leaf_node %}
-                        <li class="list-group-item">
-                            <a href="{% url 'todo:todo_detail' node.id %}">{{ node.subject }}</a>
-                            {% if node.tododetail_set.count > 0 %}
-                            <span class="text-danger small mx-2">{{ node.tododetail_set.count }}</span>
-                            {% endif %}
-                            <ul class="list-group list-group-flush">
-                                {{ children }}
-                            </ul>
-                        </li>
+                        <tr class="text-center" data-level="{{ node.level }}" data-pk="{{ node.id }}" data-pid="{{ node.parent_id|default_if_none:'' }}" draggable="true">
+                            <td>
+                                <input type="checkbox" id="action-toggle">
+                            </td>
+                            <td class="text-start">
+                                {% if node.children.exists > 0 %}
+                                <div class="tree-node children" data-pk="{{ node.id }}" data-level="{{ node.level }}"></div>
+                                {% endif %}
+                            </td>
+                            <td class="text-start">
+                                <div style="text-indent:{{ node.level|mul:20 }}px;">
+                                    <a href="{% url 'todo:todo_detail' node.id %}">
+                                        {{ node.subject }}
+                                    </a>
+                                    {% if node.tododetail_set.count > 0 %}
+                                        <span class="text-danger small mx-2">{{ node.tododetail_set.count }}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="text-start">{{ node.subject }}</td>
+                        </tr>
+                        {{ children }}
                     {% else %}
-                        <li class="list-group-item">
-                            <a href="{% url 'todo:todo_detail' node.id %}">{{ node.subject }}</a>
-                            {% if node.tododetail_set.count > 0 %}
-                            <span class="text-danger small mx-2">{{ node.tododetail_set.count }}</span>
-                            {% endif %}
-                        </li>
+                        <tr class="text-center" data-level="{{ node.level }}" data-pk="{{ node.id }}" data-pid="{{ node.parent_id|default_if_none:'' }}" draggable="true">
+                            <td>
+                                <input type="checkbox" id="action-toggle">
+                            </td>
+                            <td class="text-start">
+                                {% if node.children.exists %}
+                                <div class="tree-node children" data-pk="{{ node.id }}" data-level="{{ node.level }}" data-url=""></div>
+                                {% endif %}
+                            </td>
+                            <td class="text-start">
+                                <div style="text-indent:{{ node.level|mul:20 }}px;">
+                                    <a href="{% url 'todo:todo_detail' node.id %}">
+                                        {{ node.subject }}
+                                    </a>
+                                    {% if node.tododetail_set.count > 0 %}
+                                        <span class="text-danger small mx-2">{{ node.tododetail_set.count }}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="text-start">{{ node.subject }}</td>
+                        </tr>
                     {% endif %}
                 {% endrecursetree %}
             {% else %}
-                <li class="list-group-item">
-                    <a>할일이 없습니다.</a>
-                </li>
+                <tr>
+                    <td colspan="4">할일이 없습니다.</td>
+                </tr>
             {% endif %}
-        </ul>
-    </div>
+        </tbody>
+    </table>
     <a href="{% url 'todo:todo_create' %}" class="btn btn-primary">할일등록</a>
 </div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    const tree_node_elements = document.getElementsByClassName("tree-node");
+    Array.from(tree_node_elements).forEach(function(element){
+        element.addEventListener('click', function(){
+            if(element.classList.contains('closed')){
+                doToggle(this.dataset.pk, true);
+                element.classList.remove('closed');
+            }else{
+                doToggle(this.dataset.pk, false);
+                element.classList.add('closed');
+            }
+        });
+    });
+
+    function doToggle(id, show) {
+        if(id){
+            var targetRows = document.querySelectorAll('tr[data-pid="' + id + '"]');
+            targetRows.forEach(function(row) {
+                var dataPkValue = row.getAttribute('data-pk');
+                doToggle(dataPkValue, show);
+                if(show){
+                    row.style.display = 'table-row';
+                }else{
+                    row.style.display = 'none';
+                }
+            });
+        }
+    }
+
+    var dragged;
+    document.addEventListener('dragstart', function(event) {
+        // 드래그 시작 시 데이터 전달
+        event.dataTransfer.setData('text/plain', null);
+        // 드래그 시작 시 해당 요소를 저장
+        dragged = event.target;
+        // 드래그할 때 마우스 커서 스타일 변경
+    });
+
+    document.addEventListener('dragover', function(event) {
+        // 드래그 중인 요소가 올바른 타겟 위에 있을 때
+        // 부모인 TR을 찾아 class를 추가하거나 제거
+        var targetTR = findParentByTagName(event.target, 'TR');
+        if (targetTR) {
+            event.preventDefault();
+            targetTR.classList.add('highlight');
+        }
+    });
+
+    document.addEventListener('dragleave', function(event) {
+        // 드래그 중인 요소가 떠날 때
+        // 부모인 TR을 찾아 class를 제거
+        var targetTR = findParentByTagName(event.target, 'TR');
+        if (targetTR) {
+            targetTR.classList.remove('highlight');
+        }
+    });
+
+    document.addEventListener('drop', function(event) {
+        // 드롭 시 이동한 행을 목적지로 삽입
+        // 부모인 TR을 찾아 class를 제거
+        var targetTR = findParentByTagName(event.target, 'TR');
+        if (targetTR) {
+            event.preventDefault();
+            targetTR.classList.remove('highlight');
+            // 드롭 위치에 따라 목적지 요소 앞 또는 뒤에 삽입
+            var afterNode = targetTR.nextSibling;
+            targetTR.parentNode.insertBefore(dragged, afterNode);
+        }
+    });
+
+    document.addEventListener('dragend', function() {
+    });
+
+    // 부모 노드 중 특정 태그명을 찾아 반환하는 함수
+    function findParentByTagName(element, tagName) {
+        while (element && element.tagName !== tagName) {
+            element = element.parentNode;
+        }
+        return element;
+    }
+</script>
 {% endblock %}
