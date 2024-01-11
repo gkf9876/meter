@@ -25,3 +25,7 @@ input[type=submit]{
 .highlight {
     border-bottom: 2px solid red;
 }
+.drag-line{
+    font-size: 12px;
+    border-bottom: 2px solid red;
+}

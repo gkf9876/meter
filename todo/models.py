@@ -8,6 +8,8 @@ class Todo(MPTTModel):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     subject = models.CharField(max_length=50)
     parent = TreeForeignKey('self', blank=True, null=True, related_name='children', db_index=True, on_delete=models.CASCADE)
+    check_yn = models.CharField(max_length=2, default='N')
+    use_yn = models.CharField(max_length=2, default='Y')
     create_date = models.DateTimeField()
     update_date = models.DateTimeField(null=True, blank=True)
 

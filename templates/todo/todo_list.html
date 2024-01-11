@@ -21,12 +21,21 @@
                                 {% endif %}
                             </td>
                             <td class="text-start">
-                                <div style="text-indent:{{ node.level|mul:20 }}px;">
+                                <div style="padding-left:{{ node.level|mul:20 }}px;">
                                     <a href="{% url 'todo:todo_detail' node.id %}">
-                                        {{ node.subject }}
+                                        {% if node.check_yn == 'Y' %}
+                                            <del>{{ node.subject }}</del>
+                                        {% else %}
+                                            {{ node.subject }}
+                                        {% endif %}
                                     </a>
-                                    {% if node.tododetail_set.count > 0 %}
-                                        <span class="text-danger small mx-2">{{ node.tododetail_set.count }}</span>
+                                    {% if node.tododetail_set|filter_useYn:'Y'|length > 0 %}
+                                        <span class="text-danger small mx-2">{{ node.tododetail_set|filter_useYn:'Y'|length }}</span>
+                                    {% endif %}
+                                    {% if node.check_yn == 'Y' %}
+                                        <a href="{% url 'todo:todo_check' node.id 'N' %}" class="btn btn-outline-primary float-sm-end">취소</a>
+                                    {% else %}
+                                        <a href="{% url 'todo:todo_check' node.id 'Y' %}" class="btn btn-outline-primary float-sm-end">확인</a>
                                     {% endif %}
                                 </div>
                             </td>
@@ -40,12 +49,21 @@
                                 {% endif %}
                             </td>
                             <td class="text-start">
-                                <div style="text-indent:{{ node.level|mul:20 }}px;">
+                                <div style="padding-left:{{ node.level|mul:20 }}px;">
                                     <a href="{% url 'todo:todo_detail' node.id %}">
-                                        {{ node.subject }}
+                                        {% if node.check_yn == 'Y' %}
+                                            <del>{{ node.subject }}</del>
+                                        {% else %}
+                                            {{ node.subject }}
+                                        {% endif %}
                                     </a>
-                                    {% if node.tododetail_set.count > 0 %}
-                                        <span class="text-danger small mx-2">{{ node.tododetail_set.count }}</span>
+                                    {% if node.tododetail_set|filter_useYn:'Y'|length > 0 %}
+                                        <span class="text-danger small mx-2">{{ node.tododetail_set|filter_useYn:'Y'|length }}</span>
+                                    {% endif %}
+                                    {% if node.check_yn == 'Y' %}
+                                        <a href="{% url 'todo:todo_check' node.id 'N' %}" class="btn btn-outline-primary float-sm-end">취소</a>
+                                    {% else %}
+                                        <a href="{% url 'todo:todo_check' node.id 'Y' %}" class="btn btn-outline-primary float-sm-end">확인</a>
                                     {% endif %}
                                 </div>
                             </td>
@@ -61,6 +79,11 @@
     </table>
     <a href="{% url 'todo:todo_create' %}" class="btn btn-primary">할일등록</a>
 </div>
+<form id="todoForm" action="{% url 'todo:todo_dragdrop' %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" id="parent_id" name="parent_id"/>
+    <input type="hidden" id="id" name="id"/>
+</form>
 {% endblock %}
 {% block script %}
 <script type="text/javascript">
@@ -97,8 +120,10 @@
         // 드래그 시작 시 데이터 전달
         event.dataTransfer.setData('text/plain', null);
         // 드래그 시작 시 해당 요소를 저장
-        dragged = event.target;
-        // 드래그할 때 마우스 커서 스타일 변경
+        var targetTR = findParentByTagName(event.target, 'TR');
+        if (targetTR) {
+            dragged = targetTR;
+        }
     });
 
     document.addEventListener('dragover', function(event) {
@@ -130,6 +155,10 @@
             // 드롭 위치에 따라 목적지 요소 앞 또는 뒤에 삽입
             var afterNode = targetTR.nextSibling;
             targetTR.parentNode.insertBefore(dragged, afterNode);
+
+            document.getElementById('parent_id').value = targetTR.getAttribute('data-pk');
+            document.getElementById('id').value = dragged.getAttribute('data-pk');
+            document.getElementById('todoForm').submit();
         }
     });
 
