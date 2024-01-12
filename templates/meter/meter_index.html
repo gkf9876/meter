@@ -38,6 +38,8 @@
     var seconds = 0;
     var interval = null;
     var seconds_list = [];
+    var start_date = null;
+    var end_date = null;
 
     // csrttoken 받아오기. (django 공식문서 https://docs.djangoproject.com/en/2.2/ref/csrf/)
     function getCookie(name) {
@@ -90,6 +92,9 @@
                 if(xhr.readyState === XMLHttpRequest.DONE){
                     if(xhr.status === 200){
                         var jsonResponse = JSON.parse(xhr.responseText);
+                        start_date = new Date(jsonResponse.start_date);
+                        end_date = new Date(jsonResponse.end_date);
+
                         document.getElementById("meter_id").value = jsonResponse.meter_id;
                         console.log('데이터베이스 값이 성공적으로 업데이트되었습니다.');
                     }else{
@@ -124,10 +129,29 @@
                         if(xhr.readyState === XMLHttpRequest.DONE){
                             if(xhr.status === 200){
                                 var jsonResponse = JSON.parse(xhr.responseText);
-                                var start_date = new Date(jsonResponse.start_date);
-                                var end_date = new Date(jsonResponse.end_date);
+                                end_date = new Date(jsonResponse.end_date);
 
                                 document.getElementById("meter_id").value = jsonResponse.meter_id;
+
+                                var timeDifference = end_date - start_date;
+                                var second_difference = Math.floor(timeDifference / 1000);
+
+                                var sum = 0;
+                                for(var i=0; i<seconds_list.length; i++){
+                                    sum += seconds_list[i];
+                                }
+                                seconds = sum + second_difference;
+
+                                var hour = Math.floor(seconds / 3600);
+                                var minute = Math.floor((seconds % 3600) / 60);
+                                var remainingSecond = seconds % 60;
+
+                                var hours = (hour < 10)? "0" + hour : hour;
+                                var minutes = (minute < 10)? "0" + minute : minute;
+                                var remainingSeconds = (remainingSecond < 10)? "0" + remainingSecond : remainingSecond;
+
+                                document.getElementById("timer").innerHTML = hours + ":" + minutes + ":" + remainingSeconds;
+
                                 console.log('데이터베이스 값이 성공적으로 업데이트되었습니다.');
                             }else{
                                 document.getElementById("timer").innerHTML = "##:##:##";
@@ -176,13 +200,11 @@
                 if(xhr.readyState === XMLHttpRequest.DONE){
                     if(xhr.status === 200){
                         var jsonResponse = JSON.parse(xhr.responseText);
-                        var start_date = new Date(jsonResponse.start_date);
-                        var end_date = new Date(jsonResponse.end_date);
+                        end_date = new Date(jsonResponse.end_date);
 
                         document.getElementById("meter_id").value = jsonResponse.meter_id;
 
                         var timeDifference = end_date - start_date;
-
                         var second_difference = Math.floor(timeDifference / 1000);
 
                         seconds_list.push(second_difference);
@@ -191,6 +213,16 @@
                             sum += seconds_list[i];
                         }
                         seconds = sum;
+
+                        var hour = Math.floor(seconds / 3600);
+                        var minute = Math.floor((seconds % 3600) / 60);
+                        var remainingSecond = seconds % 60;
+
+                        var hours = (hour < 10)? "0" + hour : hour;
+                        var minutes = (minute < 10)? "0" + minute : minute;
+                        var remainingSeconds = (remainingSecond < 10)? "0" + remainingSecond : remainingSecond;
+
+                        document.getElementById("timer").innerHTML = hours + ":" + minutes + ":" + remainingSeconds;
 
                         console.log('데이터베이스 값이 성공적으로 업데이트되었습니다.');
                     }else{

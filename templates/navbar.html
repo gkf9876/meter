@@ -10,10 +10,16 @@
                 aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'todo:todo_index' %}">todo</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="{% url 'todo:todo_index' %}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        todo
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'todo:todo_index' %}?check_yn=N">todo</a></li>
+                        <li><a class="dropdown-item" href="{% url 'todo:todo_index' %}">todo all</a></li>
+                    </ul>
                 </li>
                 <li class="nav-item">
                     {% if user.is_authenticated %}
