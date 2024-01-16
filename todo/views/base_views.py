@@ -9,11 +9,11 @@ logger = logging.getLogger('todo')
 @login_required(login_url='common:login')
 def index(request):
     logger.info("INFO 레벨로 출력")
-    check_yn = request.GET.get('check_yn', None)
+    check_yn = request.GET.get('check_yn', '')
     todo_tree = Todo.objects.filter(author_id=request.user.id, use_yn='Y')
     if check_yn:
         todo_tree = todo_tree.filter(check_yn=check_yn)
-    context = {'todo_tree': todo_tree}
+    context = {'todo_tree': todo_tree, 'check_yn':check_yn}
     return render(request, 'todo/todo_list.html', context)
 
 @login_required(login_url='common:login')

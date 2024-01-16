@@ -3,6 +3,17 @@
 {% block content %}
 {% load mptt_tags %}
 <div class="container my-3">
+    <!-- message 표시 -->
+    {% if messages %}
+    <div class="alert alert-danger my-3" role="alert">
+        {% for message in messages %}
+        <strong>{{ message.tags }}</strong>
+        <ul>
+            <li>{{ message.message }}</li>
+        </ul>
+        {% endfor %}
+    </div>
+    {% endif %}
     <table class="table">
         <thead>
         <tr class="text-center table-dark">
@@ -20,7 +31,7 @@
                                 <div class="tree-node children" data-pk="{{ node.id }}" data-level="{{ node.level }}"></div>
                                 {% endif %}
                             </td>
-                            <td class="text-start">
+                            <td class="subject text-start">
                                 <div style="padding-left:{{ node.level|mul:20 }}px;">
                                     <a href="{% url 'todo:todo_detail' node.id %}">
                                         {% if node.check_yn == 'Y' %}
@@ -48,7 +59,7 @@
                                 <div class="tree-node children" data-pk="{{ node.id }}" data-level="{{ node.level }}" data-url=""></div>
                                 {% endif %}
                             </td>
-                            <td class="text-start">
+                            <td class="subject text-start">
                                 <div style="padding-left:{{ node.level|mul:20 }}px;">
                                     <a href="{% url 'todo:todo_detail' node.id %}">
                                         {% if node.check_yn == 'Y' %}
@@ -77,12 +88,12 @@
             {% endif %}
         </tbody>
     </table>
-    <a href="{% url 'todo:todo_create' %}" class="btn btn-primary">할일등록</a>
+    <a href="{% url 'todo:todo_create' %}?check_yn={{ check_yn }}" class="btn btn-primary">할일등록</a>
 </div>
-<form id="todoForm" action="{% url 'todo:todo_dragdrop' %}" method="post">
-    {% csrf_token %}
-    <input type="hidden" id="parent_id" name="parent_id"/>
+<form id="todoForm" method="get" action="{% url 'todo:todo_dragdrop' %}">
+    <input type="hidden" id="target_id" name="target_id"/>
     <input type="hidden" id="id" name="id"/>
+    <input type="hidden" id="check_yn" name="check_yn" value="{{ check_yn }}"/>
 </form>
 {% endblock %}
 {% block script %}
@@ -123,6 +134,7 @@
         var targetTR = findParentByTagName(event.target, 'TR');
         if (targetTR) {
             dragged = targetTR;
+            console.log('dragstart');
         }
     });
 
@@ -132,7 +144,8 @@
         var targetTR = findParentByTagName(event.target, 'TR');
         if (targetTR) {
             event.preventDefault();
-            targetTR.classList.add('highlight');
+            addDragLineDivToTd(targetTR, targetTR.dataset.level);
+            console.log('dragover');
         }
     });
 
@@ -141,7 +154,12 @@
         // 부모인 TR을 찾아 class를 제거
         var targetTR = findParentByTagName(event.target, 'TR');
         if (targetTR) {
-            targetTR.classList.remove('highlight');
+            // 이전에 추가된 drag-line 제거
+            const existingDragLineDiv = document.querySelector('div.drag-line');
+            if (existingDragLineDiv) {
+                existingDragLineDiv.remove();
+            }
+            console.log('dragleave');
         }
     });
 
@@ -151,18 +169,25 @@
         var targetTR = findParentByTagName(event.target, 'TR');
         if (targetTR) {
             event.preventDefault();
-            targetTR.classList.remove('highlight');
+            // 이전에 추가된 drag-line 제거
+            const existingDragLineDiv = document.querySelector('div.drag-line');
+            if (existingDragLineDiv) {
+                existingDragLineDiv.remove();
+            }
+
             // 드롭 위치에 따라 목적지 요소 앞 또는 뒤에 삽입
             var afterNode = targetTR.nextSibling;
             targetTR.parentNode.insertBefore(dragged, afterNode);
 
-            document.getElementById('parent_id').value = targetTR.getAttribute('data-pk');
+            document.getElementById('target_id').value = targetTR.getAttribute('data-pk');
             document.getElementById('id').value = dragged.getAttribute('data-pk');
-            document.getElementById('todoForm').submit();
+            //document.getElementById('todoForm').submit();
+            console.log('drop');
         }
     });
 
     document.addEventListener('dragend', function() {
+        console.log('dragend');
     });
 
     // 부모 노드 중 특정 태그명을 찾아 반환하는 함수
@@ -171,6 +196,37 @@
             element = element.parentNode;
         }
         return element;
+    }
+
+    function addDragLineDivToTd(elementTR, level){
+        // td 태그 가져오기
+        const tdElement = elementTR.querySelector('td.subject'); // 혹은 다른 방법으로 td 엘리먼트를 가져옴
+
+        // 이미 drag-line 클래스를 가진 div가 있는지 확인
+        const existingDragLineDiv = tdElement.querySelector('div.drag-line');
+
+        // 이미 존재하는 경우 함수 종료
+        if (existingDragLineDiv) {
+            console.log('이미 drag-line 클래스를 가진 div가 존재합니다.');
+            return;
+        }
+
+        // 새로운 div 엘리먼트 생성
+        const newDiv = document.createElement('div');
+        newDiv.className = 'drag-line';
+        newDiv.style.marginLeft = level * 20 + 'px';
+
+        // span 엘리먼트 생성
+        const spanElement = document.createElement('span');
+        //spanElement.textContent = 'move node before node';
+        spanElement.textContent = 'move node to child position';
+
+        // span을 div 안에 추가
+        newDiv.appendChild(spanElement);
+
+        // td 안에 있는 div 뒤에 새로운 div 추가
+        const existingDiv = tdElement.querySelector('div'); // 적절한 방법으로 td 내의 div 엘리먼트를 가져옴
+        existingDiv.parentNode.insertBefore(newDiv, existingDiv.nextSibling);
     }
 </script>
 {% endblock %}

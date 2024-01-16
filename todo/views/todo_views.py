@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.utils import timezone
 
 from ..forms import TodoForm
@@ -10,16 +11,19 @@ from ..models import Todo
 @login_required(login_url='common:login')
 def todo_create(request):
     if request.method == 'POST':
+        check_yn = request.GET.get('check_yn', '')
         form = TodoForm(request.user, request.POST)
         if form.is_valid():
             todo = form.save(commit=False)
             todo.author = request.user
             todo.create_date = timezone.now()
             todo.save()
-            return redirect('todo:todo_index')
+            url = reverse('todo:todo_index') + '?check_yn={}'.format(check_yn)
+            return redirect(url)
     else:
         form = TodoForm(request.user)
-    context = {'form': form}
+    check_yn = request.GET.get('check_yn', '')
+    context = {'form': form, 'check_yn':check_yn}
     return render(request, 'todo/todo_form.html', context)
 
 @login_required(login_url='common:login')
@@ -60,11 +64,37 @@ def todo_delete(request, todo_id):
 
 @login_required(login_url='common:login')
 def todo_dragdrop(request):
-    if request.method == 'POST':
-        parent_id = request.POST.get('parent_id', '')
-        id = request.POST.get('id', '')
-        print("parent_id : " + parent_id + ", id : " + id)
-    return redirect('todo:todo_index')
+    target_id = request.GET.get('target_id', '')
+    id = request.GET.get('id', '')
+    check_yn = request.GET.get('check_yn', '')
+
+    target_todo = get_object_or_404(Todo, pk=target_id, use_yn='Y')
+    if request.user != target_todo.author:
+        messages.error(request, '권한이 없습니다')
+        url = reverse('todo:todo_index') + '?check_yn={}'.format(check_yn)
+        return redirect(url)
+
+    todo = get_object_or_404(Todo, pk=id, use_yn='Y')
+    if request.user != todo.author:
+        messages.error(request, '권한이 없습니다')
+        url = reverse('todo:todo_index') + '?check_yn={}'.format(check_yn)
+        return redirect(url)
+
+    if target_id == id:
+        messages.error(request, '드래그 오류')
+        url = reverse('todo:todo_index') + '?check_yn={}'.format(check_yn)
+        return redirect(url)
+
+    if target_todo.is_descendant_of(todo):
+        messages.error(request, '잘못된 위치입니다.')
+        url = reverse('todo:todo_index') + '?check_yn={}'.format(check_yn)
+        return redirect(url)
+    
+    todo.parent = target_todo
+    todo.save()
+
+    url = reverse('todo:todo_index') + '?check_yn={}'.format(check_yn)
+    return redirect(url)
 
 @login_required(login_url='common:login')
 def todo_check(request, todo_id, check_yn):
