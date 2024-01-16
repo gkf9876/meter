@@ -44,9 +44,9 @@
                                         <span class="text-danger small mx-2">{{ node.tododetail_set|filter_useYn:'Y'|length }}</span>
                                     {% endif %}
                                     {% if node.check_yn == 'Y' %}
-                                        <a href="{% url 'todo:todo_check' node.id 'N' %}" class="btn btn-outline-primary float-sm-end">취소</a>
+                                        <a href="{% url 'todo:todo_check' node.id 'N' %}?check_yn={{ check_yn }}" class="btn btn-outline-primary float-sm-end">취소</a>
                                     {% else %}
-                                        <a href="{% url 'todo:todo_check' node.id 'Y' %}" class="btn btn-outline-primary float-sm-end">확인</a>
+                                        <a href="{% url 'todo:todo_check' node.id 'Y' %}?check_yn={{ check_yn }}" class="btn btn-outline-primary float-sm-end">확인</a>
                                     {% endif %}
                                 </div>
                             </td>
@@ -72,9 +72,9 @@
                                         <span class="text-danger small mx-2">{{ node.tododetail_set|filter_useYn:'Y'|length }}</span>
                                     {% endif %}
                                     {% if node.check_yn == 'Y' %}
-                                        <a href="{% url 'todo:todo_check' node.id 'N' %}" class="btn btn-outline-primary float-sm-end">취소</a>
+                                        <a href="{% url 'todo:todo_check' node.id 'N' %}?check_yn={{ check_yn }}" class="btn btn-outline-primary float-sm-end">취소</a>
                                     {% else %}
-                                        <a href="{% url 'todo:todo_check' node.id 'Y' %}" class="btn btn-outline-primary float-sm-end">확인</a>
+                                        <a href="{% url 'todo:todo_check' node.id 'Y' %}?check_yn={{ check_yn }}" class="btn btn-outline-primary float-sm-end">확인</a>
                                     {% endif %}
                                 </div>
                             </td>
@@ -159,7 +159,6 @@
             if (existingDragLineDiv) {
                 existingDragLineDiv.remove();
             }
-            console.log('dragleave');
         }
     });
 
@@ -181,8 +180,7 @@
 
             document.getElementById('target_id').value = targetTR.getAttribute('data-pk');
             document.getElementById('id').value = dragged.getAttribute('data-pk');
-            //document.getElementById('todoForm').submit();
-            console.log('drop');
+            document.getElementById('todoForm').submit();
         }
     });
 

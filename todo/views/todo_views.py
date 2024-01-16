@@ -98,10 +98,12 @@ def todo_dragdrop(request):
 
 @login_required(login_url='common:login')
 def todo_check(request, todo_id, check_yn):
+    get_check_yn = request.GET.get('check_yn', '')
     todo = get_object_or_404(Todo, pk=todo_id, use_yn='Y')
     if request.user != todo.author:
         messages.error(request, '권한이 없습니다')
-        return redirect('todo:todo_index')
+        url = reverse('todo:todo_index') + '?check_yn={}'.format(get_check_yn)
+        return redirect(url)
     todo.check_yn = check_yn
     todo.update_date = timezone.now()
     todo.save()
@@ -112,4 +114,5 @@ def todo_check(request, todo_id, check_yn):
         child.update_date = timezone.now()
         child.save()
 
-    return redirect('todo:todo_index')
+    url = reverse('todo:todo_index') + '?check_yn={}'.format(get_check_yn)
+    return redirect(url)
