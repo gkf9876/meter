@@ -112,7 +112,7 @@
                 seconds += 1;
                 var hour = Math.floor(seconds / 3600);
                 var minute = Math.floor((seconds % 3600) / 60);
-                var remainingSecond = seconds % 60;
+                var remainingSecond = Math.floor(seconds % 60);
 
                 var hours = (hour < 10)? "0" + hour : hour;
                 var minutes = (minute < 10)? "0" + minute : minute;
@@ -134,7 +134,7 @@
                                 document.getElementById("meter_id").value = jsonResponse.meter_id;
 
                                 var timeDifference = end_date - start_date;
-                                var second_difference = Math.floor(timeDifference / 1000);
+                                var second_difference = timeDifference / 1000;
 
                                 var sum = 0;
                                 for(var i=0; i<seconds_list.length; i++){
@@ -144,7 +144,7 @@
 
                                 var hour = Math.floor(seconds / 3600);
                                 var minute = Math.floor((seconds % 3600) / 60);
-                                var remainingSecond = seconds % 60;
+                                var remainingSecond = Math.floor(seconds % 60);
 
                                 var hours = (hour < 10)? "0" + hour : hour;
                                 var minutes = (minute < 10)? "0" + minute : minute;
@@ -205,7 +205,7 @@
                         document.getElementById("meter_id").value = jsonResponse.meter_id;
 
                         var timeDifference = end_date - start_date;
-                        var second_difference = Math.floor(timeDifference / 1000);
+                        var second_difference = timeDifference / 1000;
 
                         seconds_list.push(second_difference);
                         var sum = 0;
@@ -216,7 +216,7 @@
 
                         var hour = Math.floor(seconds / 3600);
                         var minute = Math.floor((seconds % 3600) / 60);
-                        var remainingSecond = seconds % 60;
+                        var remainingSecond = Math.floor(seconds % 60);
 
                         var hours = (hour < 10)? "0" + hour : hour;
                         var minutes = (minute < 10)? "0" + minute : minute;

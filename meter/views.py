@@ -52,10 +52,32 @@ def update(request):
             return JsonResponse({'error': 'Invalid meter_id'}, status=400)
         try:
             meter = get_object_or_404(Meter, id=meter_id)
-            meter.author = request.user
-            meter.end_date = timezone.now()
-            meter.memo = memo
-            meter.save()
+            current_time = timezone.now()
+            one_day_ago = current_time - timezone.timedelta(days=1)
+
+            # 24:00 지날때 처리
+            print(meter.start_date.day)
+            print(current_time.day)
+            if meter.start_date.day < current_time.day:
+                meter.author = request.user
+                meter.end_date = timezone.datetime(one_day_ago.year, one_day_ago.month, one_day_ago.day, 23, 59, 59)
+                meter.memo = memo
+                meter.save()
+
+                temp = Meter()
+                temp.author = request.user
+                temp.start_date = timezone.datetime(current_time.year, current_time.month, current_time.day, 0, 0, 0)
+                temp.end_date = current_time
+                temp.memo = memo
+                temp.study = meter.study
+                temp.save()
+
+                meter = temp
+            else:
+                meter.author = request.user
+                meter.end_date = current_time
+                meter.memo = memo
+                meter.save()
             response_data = {'meter_id':meter.id, 'start_date':meter.start_date, 'end_date' : meter.end_date, 'message': '데이터베이스 값이 성공적으로 업데이트되었습니다.'}
             return JsonResponse(response_data)
         except Meter.DoesNotExist:
