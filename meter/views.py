@@ -15,7 +15,7 @@ from .models import Study, Meter
 def index(request):
     study_list = Study.objects.order_by('-create_date').filter(author_id=request.user.id)
     context = {'study_list': study_list}
-    return render(request, 'meter/meter_index.html', context)
+    return render(request, 'meter/index.html', context)
 
 def create(request):
     if request.method == 'POST':
@@ -56,8 +56,6 @@ def update(request):
             one_day_ago = current_time - timezone.timedelta(days=1)
 
             # 24:00 지날때 처리
-            print(meter.start_date.day)
-            print(current_time.day)
             if meter.start_date.day < current_time.day:
                 meter.author = request.user
                 meter.end_date = timezone.datetime(one_day_ago.year, one_day_ago.month, one_day_ago.day, 23, 59, 59)
@@ -111,4 +109,4 @@ def chart(request):
         total_seconds = meter_list.values_list('total_seconds', flat=True)
         data = [int(ts.total_seconds())/60 for ts in total_seconds]
     context = {'study_list': study_list, 'labels': labels, 'data': data, 'study_id':study_id}
-    return render(request, 'meter/meter_chart.html', context)
+    return render(request, 'meter/chart.html', context)

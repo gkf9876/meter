@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('meter/', include('meter.urls')),
     path('todo/', include('todo.urls')),
+    path('habit/', include('habit.urls')),
     path('common/', include('common.urls')),
     path('tinymce/', include('tinymce.urls')),
     path('', views.index, name='index'),

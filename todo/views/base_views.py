@@ -14,10 +14,10 @@ def index(request):
     if check_yn:
         todo_tree = todo_tree.filter(check_yn=check_yn)
     context = {'todo_tree': todo_tree, 'check_yn':check_yn}
-    return render(request, 'todo/todo_list.html', context)
+    return render(request, 'todo/list.html', context)
 
 @login_required(login_url='common:login')
 def detail(request, todo_id):
     todo = get_object_or_404(Todo, pk=todo_id, author_id=request.user.id, use_yn='Y')
     context = {'todo': todo}
-    return render(request, 'todo/todo_detail.html', context)
+    return render(request, 'todo/detail.html', context)

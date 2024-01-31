@@ -30,11 +30,13 @@
             </div>
         </div>
     </div>
-    <a href="{% url 'meter:meter_chart' %}" class="btn btn-primary">차트 확인</a>
+    <a href="{% url 'meter:chart' %}" class="btn btn-primary">차트 확인</a>
 </div>
 {% endblock %}
 {% block script %}
 <script type="text/javascript">
+    var isStarted = false;
+    var isStopped = true;
     var seconds = 0;
     var interval = null;
     var seconds_list = [];

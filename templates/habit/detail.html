@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load habit_filter %}
+{% block content %}
+<div class="container my-3">
+    <!-- message 표시 -->
+    {% if messages %}
+    <div class="alert alert-danger my-3" role="alert">
+        {% for message in messages %}
+            <strong>{{ message.tags }}</strong>
+            <ul><li>{{ message.message }}</li></ul>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <!-- 습관 -->
+    <h2 class="border-bottom py-2">{{ habit.subject }}</h2>
+    <div class="card my-3">
+        <div class="card-body">
+            <div class="card-text">{{ habit.content|safe }}</div>
+            <div class="d-flex justify-content-end">
+                {% if question.modify_date %}
+                <div class="badge bg-light text-dark p-2 text-start mx-3">
+                    <div class="mb-2">modified at</div>
+                    <div>{{ habit.modify_date }}</div>
+                </div>
+                {% endif %}
+                <div class="badge bg-light text-dark p-2 text-start">
+                    <div class="mb-2">{{ habit.author.username }}</div>
+                    <div>{{ habit.create_date }}</div>
+                </div>
+            </div>
+            <div class="my-3">
+                {% if request.user == habit.author %}
+                <a href="{% url 'habit:modify' habit.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
+                <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'habit:delete' habit.id %}">삭제</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!-- 실천내용 -->
+    <h5 class="border-bottom my-3 py-2">{{ habit.habitdetail_set.count }}개의 실천이 있습니다.</h5>
+    {% for habitdetail in habit.habitdetail_set.all %}
+    <a id="habitdetail_{{ habitdetail.id }}"></a>
+    <div class="card my-3">
+        <div class="card-body">
+            <div class="card-text">{{ habitdetail.content|safe }}</div>
+            <div class="d-flex justify-content-end">
+                {% if answer.modify_date %}
+                <div class="badge bg-light text-dark p-2 text-start mx-3">
+                    <div class="mb-2">modified at</div>
+                    <div>{{ habitdetail.modify_date }}</div>
+                </div>
+                {% endif %}
+                <div class="badge bg-light text-dark p-2 text-start">
+                    <div class="mb-2">{{ habitdetail.author.username }}</div>
+                    <div>{{ habitdetail.create_date }}</div>
+                </div>
+            </div>
+            <div class="my-3">
+                {% if request.user == habitdetail.author %}
+                <a href="{% url 'habit:detail_modify' habitdetail.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
+                <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'habit:detail_delete' habitdetail.id %}">삭제</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <form action="{% url 'habit:detail_create' habit.id %}" method="post" class="my-3">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+        <div class="mb-3">
+            <label for="content" class="form-label">실천내용</label>
+            <textarea {% if not user.is_authenticated %}disabled{% endif %} name="content" id="content" class="form-control" rows="10"></textarea>
+        </div>
+        <input type="submit" value="답변등록" class="btn btn-primary">
+    </form>
+</div>
+{% endblock %}
+{% block script %}
+<script src="https://cdn.tiny.cloud/1/c9h82kl7bvgxzpopk85v2c9wu1nyqyev8vrhl9ll2a7gdxfg/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+<script type="text/javascript">
+    tinymce.init({
+        selector:'#content',
+        menubar: false,
+        statusbar: false,
+        toolbar1: 'formatselect | bold italic strikethrough forecolor backcolor | link | alignleft aligncenter alignright alignjustify | numlist bullist outdent indent | removeformat'
+    });
+
+    const delete_elements = document.getElementsByClassName("delete");
+    Array.from(delete_elements).forEach(function(element){
+        element.addEventListener('click', function(){
+            if(confirm("정말로 삭제하시겠습니까?")){
+                location.href = this.dataset.uri;
+            }
+        });
+    });
+
+    const recommend_elements = document.getElementsByClassName("recommend");
+    Array.from(recommend_elements).forEach(function(element){
+        element.addEventListener('click', function(){
+            if(confirm("정말로 추천하시겠습니까?")){
+                location.href = this.dataset.uri
+            }
+        });
+    });
+</script>
+{% endblock %}

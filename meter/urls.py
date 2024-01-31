@@ -5,8 +5,8 @@ from . import views
 app_name = 'meter'
 
 urlpatterns = [
-    path('', views.index, name='meter_index'),
-    path('create/', views.create, name='meter_create'),
-    path('update/', views.update, name='meter_update'),
-    path('chart/', views.chart, name='meter_chart'),
+    path('', views.index, name='index'),
+    path('create/', views.create, name='create'),
+    path('update/', views.update, name='update'),
+    path('chart/', views.chart, name='chart'),
 ]

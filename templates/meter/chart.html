@@ -25,7 +25,7 @@
             <canvas id="myChart" width="400" height="400"></canvas>
         </div>
     </div>
-    <form id="searchForm" method="get" action="{% url 'meter:meter_chart' %}">
+    <form id="searchForm" method="get" action="{% url 'meter:chart' %}">
         <input type="hidden" id="study_id" name="study_id" value="{{ study_id|default_if_none:'' }}">
     </form>
 </div>

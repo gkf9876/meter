@@ -17,8 +17,8 @@
     <h2 class="border-bottom py-2">{{ todo.subject }}</h2>
     <div class="my-3">
         {% if request.user == todo.author %}
-            <a href="{% url 'todo:todo_modify' todo.id %}" class="btn btn-sm btn-outline-secondary" >수정</a>
-            <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'todo:todo_delete' todo.id %}">삭제</a>
+            <a href="{% url 'todo:modify' todo.id %}" class="btn btn-sm btn-outline-secondary" >수정</a>
+            <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'todo:delete' todo.id %}">삭제</a>
         {% endif %}
     </div>
     <!-- 할일 상세 -->
@@ -34,14 +34,14 @@
             </div>
             <div class="my-3">
                 {% if request.user == todo_detail.author %}
-                    <a href="{% url 'todo:tododetail_modify' todo_detail.id %}" class="btn btn-sm btn-outline-secondary" >수정</a>
-                    <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'todo:tododetail_delete' todo_detail.id %}">삭제</a>
+                    <a href="{% url 'todo:detail_modify' todo_detail.id %}" class="btn btn-sm btn-outline-secondary" >수정</a>
+                    <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'todo:detail_delete' todo_detail.id %}">삭제</a>
                 {% endif %}
             </div>
         </div>
     </div>
     {% endfor %}
-    <form action="{% url 'todo:tododetail_create' todo.id %}" method="post" class="my-3">
+    <form action="{% url 'todo:detail_create' todo.id %}" method="post" class="my-3">
         {% csrf_token %}
         {% include "form_errors.html" %}
         <div class="mb-3">

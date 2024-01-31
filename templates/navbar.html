@@ -1,7 +1,7 @@
 <!-- 네비게이션바 -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light border-botoom">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'meter:meter_index' %}">Meter</a>
+        <a class="navbar-brand" href="{% url 'meter:index' %}">Meter</a>
         <button class="navbar-toggler" type="button"
                 data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent"
@@ -13,12 +13,20 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="{% url 'todo:todo_index' %}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         todo
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{% url 'todo:todo_index' %}?check_yn=N">todo</a></li>
-                        <li><a class="dropdown-item" href="{% url 'todo:todo_index' %}">todo all</a></li>
+                        <li><a class="dropdown-item" href="{% url 'todo:index' %}?check_yn=N">todo</a></li>
+                        <li><a class="dropdown-item" href="{% url 'todo:index' %}">todo all</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        habit
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'habit:index' %}">성공하는 사람들의 7가지 습관</a></li>
                     </ul>
                 </li>
                 <li class="nav-item">
