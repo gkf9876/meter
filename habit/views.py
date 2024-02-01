@@ -29,7 +29,7 @@ def index(request):
 
 @login_required(login_url='common:login')
 def detail(request, habit_id):
-    habit = get_object_or_404(Habit, pk=habit_id, author_id=request.user.id, use_yn='Y')
+    habit = get_object_or_404(Habit, Q(author_id=request.user.id) | Q(notice_yn=True), pk=habit_id, use_yn='Y')
     context = {'habit': habit}
     return render(request, 'habit/detail.html', context)
 
