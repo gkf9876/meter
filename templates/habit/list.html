@@ -55,7 +55,7 @@
     <!-- 페이징처리 시작 -->
     <ul class="pagination justify-content-center">
         <!-- 처음페이지 -->
-        {% if habit.has_previous %}
+        {% if habit_list.has_previous %}
         <li class="page-item">
             <a class="page-link" data-page="1" href="javascript:void(0)">처음</a>
         </li>
@@ -65,9 +65,9 @@
         </li>
         {% endif %}
         <!-- 이전페이지 -->
-        {% if habit.has_previous %}
+        {% if habit_list.has_previous %}
         <li class="page-item">
-            <a class="page-link" data-page="{{ habit.previous_page_number }}" href="javascript:void(0)">이전</a>
+            <a class="page-link" data-page="{{ habit_list.previous_page_number }}" href="javascript:void(0)">이전</a>
         </li>
             {% if habit.number|add:-5 > 1 %}
             <li class="page-item disabled">
@@ -80,9 +80,9 @@
         </li>
         {% endif %}
         <!-- 페이지리스트 -->
-        {% for page_number in habit.paginator.page_range %}
-        {% if page_number >= habit.number|add:-5 and page_number <= habit_list.number|add:5 %}
-        {% if page_number == habit.number %}
+        {% for page_number in habit_list.paginator.page_range %}
+        {% if page_number >= habit_list.number|add:-5 and page_number <= habit_list.number|add:5 %}
+        {% if page_number == habit_list.number %}
         <li class="page-item active" aria-current="page">
             <a class="page-link" data-page="{{ page_number }}" href="javascript:void(0)">{{ page_number }}</a>
         </li>
@@ -101,7 +101,7 @@
             </li>
             {% endif %}
         <li class="page-item">
-            <a class="page-link" data-page="{{ habit.next_page_number }}" href="javascript:void(0)">다음</a>
+            <a class="page-link" data-page="{{ habit_list.next_page_number }}" href="javascript:void(0)">다음</a>
         </li>
         {% else %}
         <li class="page-item disabled">
@@ -111,7 +111,7 @@
         <!-- 마지막페이지 -->
         {% if habit_list.has_next %}
         <li class="page-item">
-            <a class="page-link" data-page="{{ habit.paginator.num_pages }}" href="javascript:void(0)">마지막</a>
+            <a class="page-link" data-page="{{ habit_list.paginator.num_pages }}" href="javascript:void(0)">마지막</a>
         </li>
         {% else %}
         <li class="page-item disabled">
