@@ -12,5 +12,5 @@ urlpatterns = [
     path('delete/<int:habit_id>/', views.delete, name='delete'),
     path('detail_create/<int:habit_id>/', views.detail_create, name='detail_create'),
     path('detail_modify/<int:habitdetail_id>/', views.detail_modify, name='detail_modify'),
-    path('detail_delete/<int:habit_id>/', views.detail_delete, name='detail_delete'),
+    path('detail_delete/<int:habitdetail_id>/', views.detail_delete, name='detail_delete'),
 ]

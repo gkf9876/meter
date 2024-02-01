@@ -37,8 +37,8 @@
                         <span style="color:red;">[공지]</span>
                         {% endif %}
                         <a href="{% url 'habit:detail' habit.id %}">{{ habit.subject }}</a>
-                        {% if habit.habitdetail_set.count > 0 %}
-                        <span class="text-danger small mx-2">{{ habit.habitdetail_set.count }}</span>
+                        {% if habit.habitdetail_set|filter_useYn:'Y'|length > 0 %}
+                        <span class="text-danger small mx-2">{{ habit.habitdetail_set|filter_useYn:'Y'|length }}</span>
                         {% endif %}
                     </td>
                     <td>{{ habit.author.last_name }}{{ habit.author.first_name }}</td>

@@ -37,8 +37,8 @@
         </div>
     </div>
     <!-- 실천내용 -->
-    <h5 class="border-bottom my-3 py-2">{{ habit.habitdetail_set.count }}개의 실천이 있습니다.</h5>
-    {% for habitdetail in habit.habitdetail_set.all %}
+    <h5 class="border-bottom my-3 py-2">{{ habit.habitdetail_set|filter_useYn:'Y'|length }}개의 실천이 있습니다.</h5>
+    {% for habitdetail in habit.habitdetail_set|filter_useYn:'Y' %}
     <a id="habitdetail_{{ habitdetail.id }}"></a>
     <div class="card my-3">
         <div class="card-body">
@@ -92,15 +92,6 @@
         element.addEventListener('click', function(){
             if(confirm("정말로 삭제하시겠습니까?")){
                 location.href = this.dataset.uri;
-            }
-        });
-    });
-
-    const recommend_elements = document.getElementsByClassName("recommend");
-    Array.from(recommend_elements).forEach(function(element){
-        element.addEventListener('click', function(){
-            if(confirm("정말로 추천하시겠습니까?")){
-                location.href = this.dataset.uri
             }
         });
     });
