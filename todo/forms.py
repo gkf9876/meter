@@ -17,7 +17,7 @@ class TodoForm(forms.ModelForm):
 
     def __init__(self, user, *args, **kwargs):
         super(TodoForm, self).__init__(*args, **kwargs)
-        self.fields['parent'].queryset = Todo.objects.filter(author_id=user.id)
+        self.fields['parent'].queryset = Todo.objects.filter(author_id=user.id, check_yn='N')
 
 class TodoDetailForm(forms.ModelForm):
     class Meta:

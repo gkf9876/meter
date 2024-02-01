@@ -18,10 +18,11 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
-from meter import views
+from info import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('info/', include('info.urls')),
     path('meter/', include('meter.urls')),
     path('todo/', include('todo.urls')),
     path('habit/', include('habit.urls')),
