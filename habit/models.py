@@ -7,6 +7,7 @@ class Habit(models.Model):
     subject = models.CharField(max_length=200)
     content = HTMLField()
     use_yn = models.CharField(max_length=2, default='Y')
+    notice_yn = models.BooleanField(default=False)
     create_date = models.DateTimeField()
     update_date = models.DateTimeField(null=True, blank=True)
 

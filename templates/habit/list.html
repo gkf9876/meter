@@ -33,12 +33,15 @@
                         {{ habit_list.paginator.count|sub:habit_list.start_index|sub:forloop.counter0|add:1 }}
                     </td>
                     <td class="text-start">
+                        {% if habit.notice_yn %}
+                        <span style="color:red;">[공지]</span>
+                        {% endif %}
                         <a href="{% url 'habit:detail' habit.id %}">{{ habit.subject }}</a>
                         {% if habit.habitdetail_set.count > 0 %}
                         <span class="text-danger small mx-2">{{ habit.habitdetail_set.count }}</span>
                         {% endif %}
                     </td>
-                    <td>{{ habit.author.username }}</td>
+                    <td>{{ habit.author.last_name }}{{ habit.author.first_name }}</td>
                     <td>{{ habit.create_date }}</td>
                 </tr>
                 {% endfor %}

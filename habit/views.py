@@ -13,7 +13,7 @@ from .models import Habit, HabitDetail
 def index(request):
     page = request.GET.get('page', '1')
     kw = request.GET.get('kw', '')
-    habit_list = Habit.objects.filter(author_id=request.user.id, use_yn='Y').order_by('-create_date')
+    habit_list = Habit.objects.filter(Q(author_id=request.user.id) | Q(notice_yn=True), use_yn='Y').order_by('-notice_yn', '-create_date')
     if kw:
         habit_list = habit_list.filter(
             Q(subject__icontains=kw) |
