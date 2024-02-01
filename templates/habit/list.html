@@ -78,7 +78,7 @@
         {% endif %}
         <!-- 페이지리스트 -->
         {% for page_number in habit.paginator.page_range %}
-        {% if page_number >= habit.number|add:-5 and page_number <= question_list.number|add:5 %}
+        {% if page_number >= habit.number|add:-5 and page_number <= habit_list.number|add:5 %}
         {% if page_number == habit.number %}
         <li class="page-item active" aria-current="page">
             <a class="page-link" data-page="{{ page_number }}" href="javascript:void(0)">{{ page_number }}</a>
@@ -91,8 +91,8 @@
         {% endif %}
         {% endfor %}
         <!-- 다음페이지 -->
-        {% if question_list.has_next %}
-            {% if question_list.number|add:5 < question_list.paginator.num_pages %}
+        {% if habit_list.has_next %}
+            {% if habit_list.number|add:5 < habit_list.paginator.num_pages %}
             <li class="page-item disabled">
                 <a class="page-link" tabindex="-1" aria-disabled="true" href="#">...</a>
             </li>
@@ -106,7 +106,7 @@
         </li>
         {% endif %}
         <!-- 마지막페이지 -->
-        {% if question_list.has_next %}
+        {% if habit_list.has_next %}
         <li class="page-item">
             <a class="page-link" data-page="{{ habit.paginator.num_pages }}" href="javascript:void(0)">마지막</a>
         </li>
