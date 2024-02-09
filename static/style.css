@@ -30,3 +30,6 @@ input[type=submit]{
     color: red;
     font-size: 12px;
 }
+.list-group-item.delete{
+    color: red;
+}

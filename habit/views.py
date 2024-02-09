@@ -1,3 +1,6 @@
+import os
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -5,6 +8,7 @@ from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from django.utils import timezone
 
+from common.models import File
 from .forms import HabitForm, HabitDetailForm
 from .models import Habit, HabitDetail
 
@@ -42,6 +46,13 @@ def create(request):
             habit.author = request.user
             habit.create_date = timezone.now()
             habit.save()
+            files = request.FILES.getlist('file')
+            for file in files:
+                file_instance = File()
+                file_instance.name = file.name
+                file_instance.file = file
+                file_instance.save()
+                habit.file.add(file_instance)
             return redirect('habit:index')
     else:
         form = HabitForm()
@@ -60,6 +71,21 @@ def modify(request, habit_id):
             habit = form.save(commit=False)
             habit.update_date = timezone.now()
             habit.save()
+            files = request.FILES.getlist('file')
+            for file in files:
+                file_instance = File()
+                file_instance.name = file.name
+                file_instance.file = file
+                file_instance.save()
+                habit.file.add(file_instance)
+            delete_file_id_list = request.POST.getlist('delete_attached_file')
+            for file_id in delete_file_id_list:
+                file = habit.file.get(pk=file_id)
+                habit.file.remove(file.id)
+                file_path = file.file.path
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                file.delete()
             return redirect('habit:detail', habit_id=habit.id)
     else:
         form = HabitForm(instance=habit)

@@ -233,3 +233,10 @@ TINYMCE_DEFAULT_CONFIG = {
     'width': '50%',
     'height': 600,
 }
+
+# 첨부파일 위치
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# 파일 업로드 제한 (10MB)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760

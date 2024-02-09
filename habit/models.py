@@ -1,6 +1,10 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models
 from tinymce.models import HTMLField
+
+from common.models import File
+
 
 class Habit(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -10,6 +14,7 @@ class Habit(models.Model):
     notice_yn = models.BooleanField(default=False)
     create_date = models.DateTimeField()
     update_date = models.DateTimeField(null=True, blank=True)
+    file = models.ManyToManyField(File, related_name='file_habit')
 
 class HabitDetail(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
