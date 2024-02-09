@@ -42,11 +42,16 @@ def create(request):
     if request.method == 'POST':
         form = HabitForm(request.POST)
         if form.is_valid():
+            files = request.FILES.getlist('file')
+            total_files_size = sum([file.size for file in files])
+            if total_files_size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
+                messages.error(request, '첨부파일의 총용량이 %dMB를 초과할 수 없습니다.' % (settings.FILE_UPLOAD_MAX_MEMORY_SIZE/ 1024 / 1024))
+                context = {'form': form}
+                return render(request, 'habit/form.html', context)
             habit = form.save(commit=False)
             habit.author = request.user
             habit.create_date = timezone.now()
             habit.save()
-            files = request.FILES.getlist('file')
             for file in files:
                 file_instance = File()
                 file_instance.name = file.name
@@ -68,17 +73,25 @@ def modify(request, habit_id):
     if request.method == "POST":
         form = HabitForm(request.POST, instance=habit)
         if form.is_valid():
+            files = request.FILES.getlist('file')
+            delete_file_id_list = request.POST.getlist('delete_attached_file')
+            total_files_size = sum([file.size for file in files])
+            total_files_size += sum([file.file.size for file in habit.file.all() if str(file.id) not in delete_file_id_list])
+            print(habit.file.all())
+            print(delete_file_id_list)
+            if total_files_size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
+                messages.error(request, '첨부파일의 총용량이 %dMB를 초과할 수 없습니다.' % (settings.FILE_UPLOAD_MAX_MEMORY_SIZE/ 1024 / 1024))
+                context = {'form': form}
+                return render(request, 'habit/form.html', context)
             habit = form.save(commit=False)
             habit.update_date = timezone.now()
             habit.save()
-            files = request.FILES.getlist('file')
             for file in files:
                 file_instance = File()
                 file_instance.name = file.name
                 file_instance.file = file
                 file_instance.save()
                 habit.file.add(file_instance)
-            delete_file_id_list = request.POST.getlist('delete_attached_file')
             for file_id in delete_file_id_list:
                 file = habit.file.get(pk=file_id)
                 habit.file.remove(file.id)
