@@ -3,6 +3,8 @@ import os
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
+from urllib.parse import quote
+
 
 from .forms import UserForm
 from .models import File
@@ -35,8 +37,8 @@ def download_file(request, file_id):
         with open(file_path, 'rb') as buffer:
             # HttpResponse 객체 생성
             response = HttpResponse(buffer, content_type='application/octet-stream')
-            # 파일 다운로드를 위한 Content-Disposition 헤더 설정
-            response['Content-Disposition'] = "attachment; filename=%s" % file.name
+            # Content-Disposition 헤더 설정
+            response['Content-Disposition'] = 'attachment; filename=%s' % quote(file.name)
             return response
     else:
         return HttpResponseNotFound("File not found")
