@@ -34,6 +34,8 @@ def index(request):
 @login_required(login_url='common:login')
 def detail(request, habit_id):
     habit = get_object_or_404(Habit, Q(author_id=request.user.id) | Q(notice_yn=True), pk=habit_id, use_yn='Y')
+    if request.user != habit.author:
+        habit.viewcount.add(request.user)
     context = {'habit': habit}
     return render(request, 'habit/detail.html', context)
 
@@ -164,4 +166,22 @@ def detail_delete(request, habitdetail_id):
         habitdetail.update_date = timezone.now()
         habitdetail.use_yn = 'N'
         habitdetail.save()
+    return redirect('habit:detail', habit_id=habitdetail.habit.id)
+
+@login_required(login_url='common:login')
+def vote(request, habit_id):
+    habit = get_object_or_404(Habit, pk=habit_id)
+    if request.user == habit.author:
+        messages.error(request, '본인이 작성한 글은 추천할 수 없습니다')
+    else:
+        habit.voter.add(request.user)
+    return redirect('habit:detail', habit_id=habit.id)
+
+@login_required(login_url='common:login')
+def detail_vote(request, habitdetail_id):
+    habitdetail = get_object_or_404(HabitDetail, pk=habitdetail_id)
+    if request.user == habitdetail.author:
+        messages.error(request, '본인이 작성한 글은 추천할 수 없습니다')
+    else:
+        habitdetail.voter.add(request.user)
     return redirect('habit:detail', habit_id=habitdetail.habit.id)

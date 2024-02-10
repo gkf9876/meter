@@ -13,4 +13,6 @@ urlpatterns = [
     path('detail_create/<int:habit_id>/', views.detail_create, name='detail_create'),
     path('detail_modify/<int:habitdetail_id>/', views.detail_modify, name='detail_modify'),
     path('detail_delete/<int:habitdetail_id>/', views.detail_delete, name='detail_delete'),
+    path('vote/<int:habit_id>/', views.vote, name='vote'),
+    path('detail/vote/<int:habitdetail_id>/', views.detail_vote, name='detail_vote'),
 ]
