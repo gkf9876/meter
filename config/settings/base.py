@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'tinymce',
     'common.apps.CommonConfig',
     'mptt',
+    'memorization.apps.MemorizationConfig',
     'info.apps.InfoConfig',
     'habit.apps.HabitConfig',
     'meter.apps.MeterConfig',

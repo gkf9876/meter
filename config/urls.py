@@ -22,6 +22,7 @@ from info import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('memorization/', include('memorization.urls')),
     path('info/', include('info.urls')),
     path('meter/', include('meter.urls')),
     path('todo/', include('todo.urls')),

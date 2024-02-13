@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <!-- message 표시 -->
+    {% if messages %}
+    <div class="alert alert-danger my-3" role="alert">
+        {% for message in messages %}
+            <strong>{{ message.tags }}</strong>
+            <ul><li>{{ message.message }}</li></ul>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <h5 class="my-3 border-bottom pb-2">암기등록</h5>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+        <div class="mb-3">
+            <label for="subject" class="form-label">제목</label>
+            <input type="text" class="form-control" name="subject" id="subject" value="{{ form.subject.value|default_if_none:'' }}">
+        </div>
+        <div class="mb-3">
+            <label for="content" class="form-label">내용</label>
+            <textarea class="form-control" name="content" id="content" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">저장하기</button>
+    </form>
+</div>
+{% endblock %}
+{% block script %}
+    <script src="https://cdn.tiny.cloud/1/c9h82kl7bvgxzpopk85v2c9wu1nyqyev8vrhl9ll2a7gdxfg/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector:'#content',
+            height: '500px',
+            menubar: false,
+            statusbar: false,
+            paste_data_images: true,
+            plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern codesample',
+            toolbar1: 'formatselect | bold italic strikethrough forecolor backcolor| fontsizeselect | link | alignleft aligncenter alignright alignjustify | numlist bullist table outdent indent | removeformat',
+            toolbar2: 'image media | charmap emoticons'
+        });
+    </script>
+{% endblock %}

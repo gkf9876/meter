@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load memorization_filter %}
+{% block content %}
+<div class="container my-3">
+    <div class="row my-3">
+        <div class="col-6">
+            <a href="{% url 'memorization:create' %}" class="btn btn-primary">등록하기</a>
+        </div>
+        <div class="col-6">
+            <div class="input-group">
+                <input type="text" id="search_kw" class="form-control" value="{{ kw|default_if_none:'' }}">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="button" id="btn_search">찾기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <table class="table">
+        <thead>
+        <tr class="text-center table-dark">
+            <th>번호</th>
+            <th style="width:50%">제목</th>
+            <th>글쓴이</th>
+            <th>작성일시</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if memorization_list %}
+        {% for memorization in memorization_list %}
+        <tr class="text-center">
+            <td>
+                <!-- 번호 = 전체건수 - 시작인덱스 - 현재인덱스 + 1 -->
+                {{ memorization_list.paginator.count|sub:memorization_list.start_index|sub:forloop.counter0|add:1 }}
+            </td>
+            <td class="text-start">
+                <a href="{% url 'memorization:detail' memorization.id %}">{{ memorization.subject }}</a>
+            </td>
+            <td>{{ memorization.author.username }}</td>
+            <td>{{ memorization.create_date }}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="4">암기항목이 없습니다.</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+    <!-- 페이징처리 시작 -->
+    <ul class="pagination justify-content-center">
+        <!-- 처음페이지 -->
+        {% if memorization_list.has_previous %}
+        <li class="page-item">
+            <a class="page-link" data-page="1" href="javascript:void(0)">처음</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true" href="#">처음</a>
+        </li>
+        {% endif %}
+        <!-- 이전페이지 -->
+        {% if memorization_list.has_previous %}
+        <li class="page-item">
+            <a class="page-link" data-page="{{ memorization_list.previous_page_number }}" href="javascript:void(0)">이전</a>
+        </li>
+            {% if memorization_list.number|add:-5 > 1 %}
+            <li class="page-item disabled">
+                <a class="page-link" tabindex="-1" aria-disabled="true" href="#">...</a>
+            </li>
+            {% endif %}
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true" href="#">이전</a>
+        </li>
+        {% endif %}
+        <!-- 페이지리스트 -->
+        {% for page_number in memorization_list.paginator.page_range %}
+        {% if page_number >= memorization_list.number|add:-5 and page_number <= memorization_list.number|add:5 %}
+        {% if page_number == memorization_list.number %}
+        <li class="page-item active" aria-current="page">
+            <a class="page-link" data-page="{{ page_number }}" href="javascript:void(0)">{{ page_number }}</a>
+        </li>
+        {% else %}
+        <li class="page-item">
+            <a class="page-link" data-page="{{ page_number }}" href="javascript:void(0)">{{ page_number }}</a>
+        </li>
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+        <!-- 다음페이지 -->
+        {% if memorization_list.has_next %}
+            {% if memorization_list.number|add:5 < memorization_list.paginator.num_pages %}
+            <li class="page-item disabled">
+                <a class="page-link" tabindex="-1" aria-disabled="true" href="#">...</a>
+            </li>
+            {% endif %}
+        <li class="page-item">
+            <a class="page-link" data-page="{{ memorization_list.next_page_number }}" href="javascript:void(0)">다음</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true" href="#">다음</a>
+        </li>
+        {% endif %}
+        <!-- 마지막페이지 -->
+        {% if memorization_list.has_next %}
+        <li class="page-item">
+            <a class="page-link" data-page="{{ memorization_list.paginator.num_pages }}" href="javascript:void(0)">마지막</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true" href="#">마지막</a>
+        </li>
+        {% endif %}
+    </ul>
+    <!-- 페이징처리 끝 -->
+</div>
+<form id="searchForm" method="get" action="{% url 'index' %}">
+    <input type="hidden" id="kw" name="kw" value="{{ kw|default_if_none:'' }}">
+    <input type="hidden" id="page" name="page" value="{{ page }}">
+</form>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    const page_elements = document.getElementsByClassName("page-link");
+    Array.from(page_elements).forEach(function(element){
+        element.addEventListener('click', function(){
+            document.getElementById('page').value = this.dataset.page;
+            document.getElementById('searchForm').submit();
+        });
+    });
+    const btn_search = document.getElementById("btn_search");
+    btn_search.addEventListener('click', function(){
+        document.getElementById('kw').value = document.getElementById('search_kw').value;
+        document.getElementById('page').value = 1;
+        document.getElementById('searchForm').submit();
+    });
+</script>
+{% endblock %}
