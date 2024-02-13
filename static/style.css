@@ -33,3 +33,10 @@ input[type=submit]{
 .list-group-item.delete{
     color: red;
 }
+.fixed-button{
+    position: fixed;
+    top: 50%;
+    right: 0;
+    left: 80%;
+    z-index: 1030;
+}

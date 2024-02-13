@@ -15,6 +15,10 @@
     <h2 class="border-bottom py-2">{{ memorization.subject }}</h2>
     <div class="card my-3">
         <div class="card-body">
+            <div class="fixed-button btn-group" role="group" aria-label="mixed styles">
+                <a href="javascript:void(0)" class="hideWord btn btn-sm btn-outline-secondary">가리기</a>
+                <a href="javascript:void(0)" class="revealFirstWord btn btn-sm btn-outline-secondary">한단어씩 보이기</a>
+            </div>
             <div class="card-text" id="content">{{ memorization.content|safe }}</div>
             <div class="d-flex justify-content-end">
                 {% if memorization.modify_date %}
