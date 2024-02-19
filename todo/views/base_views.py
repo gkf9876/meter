@@ -1,9 +1,11 @@
+import logging
+from datetime import date
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 
 from ..models import Todo
 
-import logging
 logger = logging.getLogger('todo')
 
 @login_required(login_url='common:login')
@@ -19,5 +21,6 @@ def index(request):
 @login_required(login_url='common:login')
 def detail(request, todo_id):
     todo = get_object_or_404(Todo, pk=todo_id, author_id=request.user.id, use_yn='Y')
-    context = {'todo': todo}
+    today = date.today()
+    context = {'todo': todo, 'today':today}
     return render(request, 'todo/detail.html', context)
