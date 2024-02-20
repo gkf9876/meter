@@ -33,7 +33,7 @@
                             </td>
                             <td class="subject text-start">
                                 <div style="padding-left:{{ node.level|mul:20 }}px;">
-                                    <a href="{% url 'todo:detail' node.id %}">
+                                    <a href="{% url 'todo:detail' node.id %}" class="d-inline-block text-truncate" style="max-width: 80%;">
                                         {% if node.check_yn == 'Y' %}
                                             <del>{{ node.subject }}</del>
                                         {% else %}
@@ -44,9 +44,9 @@
                                         <span class="text-danger small mx-2">{{ node.tododetail_set|filter_useYn:'Y'|length }}</span>
                                     {% endif %}
                                     {% if node.check_yn == 'Y' %}
-                                        <a href="{% url 'todo:check' node.id 'N' %}?check_yn={{ check_yn }}" class="btn btn-outline-primary float-sm-end">취소</a>
+                                        <a href="{% url 'todo:check' node.id 'N' %}?check_yn={{ check_yn }}" class="btn btn-outline-primary float-end">취소</a>
                                     {% else %}
-                                        <a href="{% url 'todo:check' node.id 'Y' %}?check_yn={{ check_yn }}" class="btn btn-outline-primary float-sm-end">확인</a>
+                                        <a href="{% url 'todo:check' node.id 'Y' %}?check_yn={{ check_yn }}" class="btn btn-outline-primary float-end">확인</a>
                                     {% endif %}
                                 </div>
                             </td>
@@ -61,7 +61,7 @@
                             </td>
                             <td class="subject text-start">
                                 <div style="padding-left:{{ node.level|mul:20 }}px;">
-                                    <a href="{% url 'todo:detail' node.id %}">
+                                    <a href="{% url 'todo:detail' node.id %}" class="d-inline-block text-truncate" style="max-width: 80%;">
                                         {% if node.check_yn == 'Y' %}
                                             <del>{{ node.subject }}</del>
                                         {% else %}
@@ -72,9 +72,9 @@
                                         <span class="text-danger small mx-2">{{ node.tododetail_set|filter_useYn:'Y'|length }}</span>
                                     {% endif %}
                                     {% if node.check_yn == 'Y' %}
-                                        <a href="{% url 'todo:check' node.id 'N' %}?check_yn={{ check_yn }}" class="btn btn-outline-primary float-sm-end">취소</a>
+                                        <a href="{% url 'todo:check' node.id 'N' %}?check_yn={{ check_yn }}" class="btn btn-outline-primary float-end">취소</a>
                                     {% else %}
-                                        <a href="{% url 'todo:check' node.id 'Y' %}?check_yn={{ check_yn }}" class="btn btn-outline-primary float-sm-end">확인</a>
+                                        <a href="{% url 'todo:check' node.id 'Y' %}?check_yn={{ check_yn }}" class="btn btn-outline-primary float-end">확인</a>
                                     {% endif %}
                                 </div>
                             </td>
