@@ -1,8 +1,11 @@
+import os
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 
+from common.models import File
 from ..forms import TodoDetailForm
 from ..models import Todo, TodoDetail
 
@@ -18,6 +21,13 @@ def tododetail_create(request, todo_id):
             todo_detail.todo = todo
             todo_detail.create_date = timezone.now()
             todo_detail.save()
+            files = request.FILES.getlist('file')
+            for file in files:
+                file_instance = File()
+                file_instance.name = file.name
+                file_instance.file = file
+                file_instance.save()
+                todo_detail.file.add(file_instance)
             return redirect('todo:detail', todo_id=todo.id)
     else:
         form = TodoDetailForm()
@@ -36,6 +46,21 @@ def tododetail_modify(request, todo_detail_id):
             todo_detail = form.save(commit=False)
             todo_detail.update_date = timezone.now()
             todo_detail.save()
+            files = request.FILES.getlist('file')
+            for file in files:
+                file_instance = File()
+                file_instance.name = file.name
+                file_instance.file = file
+                file_instance.save()
+                todo_detail.file.add(file_instance)
+            delete_file_id_list = request.POST.getlist('delete_attached_file')
+            for file_id in delete_file_id_list:
+                file = todo_detail.file.get(pk=file_id)
+                todo_detail.file.remove(file.id)
+                file_path = file.file.path
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                file.delete()
             return redirect('todo:detail', todo_id=todo_detail.todo.id)
     else:
         form = TodoDetailForm(instance=todo_detail)

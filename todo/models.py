@@ -3,6 +3,8 @@ from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 from tinymce.models import HTMLField
 
+from common.models import File
+
 
 class Todo(MPTTModel):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -27,6 +29,7 @@ class TodoDetail(models.Model):
     todo = models.ForeignKey(Todo, on_delete=models.CASCADE)
     date = models.DateTimeField()
     content = HTMLField()
+    file = models.ManyToManyField(File, related_name='file_tododetail')
     use_yn = models.CharField(max_length=2, default='Y')
     create_date = models.DateTimeField()
     update_date = models.DateTimeField(null=True, blank=True)
