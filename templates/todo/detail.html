@@ -30,7 +30,7 @@
             <div class="card-text">{{ todo_detail.content|safe }}</div>
             <div class="d-flex justify-content-end">
                 <div class="badge bg-light text-dark p-2">
-                    {{ todo_detail.date }}
+                    {{ todo_detail.date|date:'Y년 n월 j일 l' }}
                 </div>
             </div>
             <div class="my-3">
@@ -42,7 +42,7 @@
                                 <img src="{% static 'icon/download.svg' %}" alt="Download SVG">
                             </a>
                             {{ file.name }}
-                            <span class="text-danger small mx-2">{{ file.file.size|div:1024|div:1024 }}MB</span>
+                            <span class="text-danger small mx-2">{{ file.file.size|div:1024|div:1024|floatformat:2 }}MB</span>
                         </li>
                     {% endfor %}
                 </ul>

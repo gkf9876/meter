@@ -38,7 +38,7 @@
                                 <img src="{% static 'icon/download.svg' %}" alt="Download SVG">
                             </a>
                             {{ file.name }}
-                            <span class="text-danger small mx-2">{{ file.file.size|div:1024|div:1024 }}MB</span>
+                            <span class="text-danger small mx-2">{{ file.file.size|div:1024|div:1024|floatformat:2 }}MB</span>
                         </li>
                     {% endfor %}
                 </ul>
