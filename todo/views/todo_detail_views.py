@@ -1,5 +1,6 @@
 import os
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
@@ -8,6 +9,7 @@ from django.utils import timezone
 from common.models import File
 from ..forms import TodoDetailForm
 from ..models import Todo, TodoDetail
+from datetime import datetime
 
 
 @login_required(login_url='common:login')
@@ -16,6 +18,13 @@ def tododetail_create(request, todo_id):
     if request.method == 'POST':
         form = TodoDetailForm(request.POST)
         if form.is_valid():
+            files = request.FILES.getlist('file')
+            total_files_size = sum([file.size for file in files])
+            if total_files_size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
+                messages.error(request, '첨부파일의 총용량이 %dMB를 초과할 수 없습니다.' % (settings.FILE_UPLOAD_MAX_MEMORY_SIZE/ 1024 / 1024))
+                date = datetime.strptime(request.POST.get('date'), '%Y-%m-%d')
+                context = {'todo': todo, 'form': form, 'date': date}
+                return render(request, 'todo/detail.html', context)
             todo_detail = form.save(commit=False)
             todo_detail.author = request.user
             todo_detail.todo = todo
@@ -43,6 +52,13 @@ def tododetail_modify(request, todo_detail_id):
     if request.method == 'POST':
         form = TodoDetailForm(request.POST, instance=todo_detail)
         if form.is_valid():
+            files = request.FILES.getlist('file')
+            total_files_size = sum([file.size for file in files])
+            if total_files_size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
+                messages.error(request, '첨부파일의 총용량이 %dMB를 초과할 수 없습니다.' % (settings.FILE_UPLOAD_MAX_MEMORY_SIZE/ 1024 / 1024))
+                date = datetime.strptime(request.POST.get('date'), '%Y-%m-%d')
+                context = {'form': form, 'date':date}
+                return render(request, 'todo/detail_form.html', context)
             todo_detail = form.save(commit=False)
             todo_detail.update_date = timezone.now()
             todo_detail.save()
@@ -64,7 +80,7 @@ def tododetail_modify(request, todo_detail_id):
             return redirect('todo:detail', todo_id=todo_detail.todo.id)
     else:
         form = TodoDetailForm(instance=todo_detail)
-    context = {'form': form}
+    context = {'form': form, 'date':todo_detail.date}
     return render(request, 'todo/detail_form.html', context)
 
 @login_required(login_url='common:login')

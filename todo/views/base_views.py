@@ -22,5 +22,5 @@ def index(request):
 def detail(request, todo_id):
     todo = get_object_or_404(Todo, pk=todo_id, author_id=request.user.id, use_yn='Y')
     today = date.today()
-    context = {'todo': todo, 'today':today}
+    context = {'todo': todo, 'date':today}
     return render(request, 'todo/detail.html', context)

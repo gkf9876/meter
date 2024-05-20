@@ -3,17 +3,6 @@
 {% load todo_filter %}
 {% block content %}
 <div class="container my-3">
-    <!-- message 표시 -->
-    {% if messages %}
-    <div class="alert alert-danger my-3" role="alert">
-        {% for message in messages %}
-        <strong>{{ message.tags }}</strong>
-        <ul>
-            <li>{{ message.message }}</li>
-        </ul>
-        {% endfor %}
-    </div>
-    {% endif %}
     <!-- 할일 -->
     <h2 class="border-bottom py-2">{{ todo.subject }}</h2>
     <div class="my-3">
@@ -57,14 +46,26 @@
         </div>
     </div>
     {% endfor %}
+    <!-- message 표시 -->
+    {% if messages %}
+    <div class="alert alert-danger my-3" role="alert">
+        {% for message in messages %}
+        <strong>{{ message.tags }}</strong>
+        <ul>
+            <li>{{ message.message }}</li>
+        </ul>
+        {% endfor %}
+    </div>
+    {% endif %}
     <form action="{% url 'todo:detail_create' todo.id %}" method="post" class="my-3" enctype="multipart/form-data">
         {% csrf_token %}
         {% include "form_errors.html" %}
         <div class="mb-3">
-            <input type="date" {% if not user.is_authenticated %}disabled{% endif %} class="form-control" name="date" id="date" value="{{ today|date:'Y-m-d' }}">
+            <input type="date" {% if not user.is_authenticated %}disabled{% endif %} class="form-control" name="date" id="date" value="{{ date|date:'Y-m-d' }}">
+            {{ today }}
         </div>
         <div class="mb-3">
-            <textarea {% if not user.is_authenticated %}disabled{% endif %} name="content" id="content" class="form-control" rows="10"></textarea>
+            <textarea {% if not user.is_authenticated %}disabled{% endif %} name="content" id="content" class="form-control" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
         </div>
         <div class="mb-3">
             {% if form.instance.file.count > 0 %}
