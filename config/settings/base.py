@@ -233,6 +233,9 @@ TINYMCE_DEFAULT_CONFIG = {
     'image_caption':True,
     'width': '50%',
     'height': 600,
+    "file_picker_types": "image",
+    "automatic_uploads": True,
+    "images_upload_url": "/common/upload_image/",  # 이미지 업로드 경로
 }
 
 # 첨부파일 위치

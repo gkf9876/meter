@@ -1,10 +1,13 @@
 import os
+import time
 
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404, redirect
 from urllib.parse import quote
-
+from django.conf import settings
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from .forms import UserForm
 from .models import File
@@ -26,8 +29,10 @@ def signup(request):
         form = UserForm()
     return render(request, 'common/signup.html', {'form': form})
 
+
 def page_not_found(request, exception):
     return render(request, 'common/404.html', {})
+
 
 def download_file(request, file_id):
     file = get_object_or_404(File, pk=file_id)
@@ -42,3 +47,21 @@ def download_file(request, file_id):
             return response
     else:
         return HttpResponseNotFound("File not found")
+
+
+@csrf_exempt
+def upload_image(request):
+    if request.method == 'POST' and request.FILES.get('file'):
+        image = request.FILES['file']
+        filename, ext = os.path.splitext(image.name)
+        new_filename = f"{filename}_{int(time.time())}{ext}"  # UUID 사용
+        save_path = os.path.join(settings.MEDIA_ROOT, 'editor', new_filename)
+
+        with open(save_path, 'wb+') as destination:
+            for chunk in image.chunks():
+                destination.write(chunk)
+
+        image_url = f'{settings.MEDIA_URL}/editor/{new_filename}'
+        return JsonResponse({'location': image_url})
+
+    return JsonResponse({'error': 'Failed to upload image'}, status=400)
