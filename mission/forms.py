@@ -1,11 +1,11 @@
 from django import forms
-from .models import Habit, HabitDetail
+from .models import Mission, MissionDetail
 
-class HabitForm(forms.ModelForm):
+class MissionForm(forms.ModelForm):
     notice_yn = forms.BooleanField(required=False, initial='N', label='공지여부')
 
     class Meta:
-        model = Habit
+        model = Mission
         fields = ['subject', 'content', 'notice_yn']
         labels = {
             'subject': '제목',
@@ -13,9 +13,9 @@ class HabitForm(forms.ModelForm):
             'notice_yn': '공지여부',
         }
 
-class HabitDetailForm(forms.ModelForm):
+class MissionDetailForm(forms.ModelForm):
     class Meta:
-        model = HabitDetail
+        model = MissionDetail
         fields = ['content']
         labels = {
             'content': '실천내용',

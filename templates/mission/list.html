@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
-{% load habit_filter %}
+{% load mission_filter %}
 {% block content %}
 <div class="container my-3">
     <div class="row my-3">
         <div class="col-6">
-            <a href="{% url 'habit:create' %}" class="btn btn-primary">습관 등록하기</a>
+            <a href="{% url 'mission:create' %}" class="btn btn-primary">미션 등록하기</a>
         </div>
         <div class="col-6">
             <div class="input-group">
@@ -27,31 +27,31 @@
         </tr>
         </thead>
         <tbody>
-            {% if habit_list %}
-                {% for habit in habit_list %}
+            {% if mission_list %}
+                {% for mission in mission_list %}
                 <tr class="text-center">
                     <td>
                         <!-- 번호 = 전체건수 - 시작인덱스 - 현재인덱스 + 1 -->
-                        {{ habit_list.paginator.count|sub:habit_list.start_index|sub:forloop.counter0|add:1 }}
+                        {{ mission_list.paginator.count|sub:mission_list.start_index|sub:forloop.counter0|add:1 }}
                     </td>
                     <td class="text-start">
-                        {% if habit.notice_yn %}
+                        {% if mission.notice_yn %}
                         <span style="color:red;">[공지]</span>
                         {% endif %}
-                        <a href="{% url 'habit:detail' habit.id %}">{{ habit.subject }}</a>
-                        {% if habit.habitdetail_set|filter_useYn:'Y'|length > 0 %}
-                        <span class="text-danger small mx-2">{{ habit.habitdetail_set|filter_useYn:'Y'|length }}</span>
+                        <a href="{% url 'mission:detail' mission.id %}">{{ mission.subject }}</a>
+                        {% if mission.missiondetail_set|filter_useYn:'Y'|length > 0 %}
+                        <span class="text-danger small mx-2">{{ mission.missiondetail_set|filter_useYn:'Y'|length }}</span>
                         {% endif %}
                     </td>
-                    <td>{{ habit.voter.count }}</td>
-                    <td>{{ habit.viewcount.count }}</td>
-                    <td>{{ habit.author.last_name }}{{ habit.author.first_name }}</td>
-                    <td>{{ habit.create_date }}</td>
+                    <td>{{ mission.voter.count }}</td>
+                    <td>{{ mission.viewcount.count }}</td>
+                    <td>{{ mission.author.last_name }}{{ mission.author.first_name }}</td>
+                    <td>{{ mission.create_date }}</td>
                 </tr>
                 {% endfor %}
             {% else %}
                 <tr>
-                    <td colspan="6">습관이 없습니다.</td>
+                    <td colspan="6">미션이 없습니다.</td>
                 </tr>
             {% endif %}
         </tbody>
@@ -59,7 +59,7 @@
     <!-- 페이징처리 시작 -->
     <ul class="pagination justify-content-center">
         <!-- 처음페이지 -->
-        {% if habit_list.has_previous %}
+        {% if mission_list.has_previous %}
         <li class="page-item">
             <a class="page-link" data-page="1" href="javascript:void(0)">처음</a>
         </li>
@@ -69,11 +69,11 @@
         </li>
         {% endif %}
         <!-- 이전페이지 -->
-        {% if habit_list.has_previous %}
+        {% if mission_list.has_previous %}
         <li class="page-item">
-            <a class="page-link" data-page="{{ habit_list.previous_page_number }}" href="javascript:void(0)">이전</a>
+            <a class="page-link" data-page="{{ mission_list.previous_page_number }}" href="javascript:void(0)">이전</a>
         </li>
-            {% if habit.number|add:-5 > 1 %}
+            {% if mission.number|add:-5 > 1 %}
             <li class="page-item disabled">
                 <a class="page-link" tabindex="-1" aria-disabled="true" href="#">...</a>
             </li>
@@ -84,9 +84,9 @@
         </li>
         {% endif %}
         <!-- 페이지리스트 -->
-        {% for page_number in habit_list.paginator.page_range %}
-        {% if page_number >= habit_list.number|add:-5 and page_number <= habit_list.number|add:5 %}
-        {% if page_number == habit_list.number %}
+        {% for page_number in mission_list.paginator.page_range %}
+        {% if page_number >= mission_list.number|add:-5 and page_number <= mission_list.number|add:5 %}
+        {% if page_number == mission_list.number %}
         <li class="page-item active" aria-current="page">
             <a class="page-link" data-page="{{ page_number }}" href="javascript:void(0)">{{ page_number }}</a>
         </li>
@@ -98,14 +98,14 @@
         {% endif %}
         {% endfor %}
         <!-- 다음페이지 -->
-        {% if habit_list.has_next %}
-            {% if habit_list.number|add:5 < habit_list.paginator.num_pages %}
+        {% if mission_list.has_next %}
+            {% if mission_list.number|add:5 < mission_list.paginator.num_pages %}
             <li class="page-item disabled">
                 <a class="page-link" tabindex="-1" aria-disabled="true" href="#">...</a>
             </li>
             {% endif %}
         <li class="page-item">
-            <a class="page-link" data-page="{{ habit_list.next_page_number }}" href="javascript:void(0)">다음</a>
+            <a class="page-link" data-page="{{ mission_list.next_page_number }}" href="javascript:void(0)">다음</a>
         </li>
         {% else %}
         <li class="page-item disabled">
@@ -113,9 +113,9 @@
         </li>
         {% endif %}
         <!-- 마지막페이지 -->
-        {% if habit_list.has_next %}
+        {% if mission_list.has_next %}
         <li class="page-item">
-            <a class="page-link" data-page="{{ habit_list.paginator.num_pages }}" href="javascript:void(0)">마지막</a>
+            <a class="page-link" data-page="{{ mission_list.paginator.num_pages }}" href="javascript:void(0)">마지막</a>
         </li>
         {% else %}
         <li class="page-item disabled">
@@ -125,7 +125,7 @@
     </ul>
     <!-- 페이징처리 끝 -->
 </div>
-<form id="searchForm" method="get" action="{% url 'habit:index' %}">
+<form id="searchForm" method="get" action="{% url 'mission:index' %}">
     <input type="hidden" id="kw" name="kw" value="{{ kw|default_if_none:'' }}">
     <input type="hidden" id="page" name="page" value="{{ page }}">
 </form>

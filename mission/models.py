@@ -5,7 +5,7 @@ from tinymce.models import HTMLField
 from common.models import File
 
 
-class Habit(models.Model):
+class Mission(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     subject = models.CharField(max_length=200)
     content = HTMLField()
@@ -15,13 +15,13 @@ class Habit(models.Model):
     update_date = models.DateTimeField(null=True, blank=True)
     file = models.ManyToManyField(File, related_name='file_habit')
     voter = models.ManyToManyField(User, related_name='voter_habit')
-    viewcount = models.ManyToManyField(User, related_name='viewcount_habit')
+    viewcount = models.ManyToManyField(User, related_name='viewcount_mission')
 
-class HabitDetail(models.Model):
+class MissionDetail(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    habit = models.ForeignKey(Habit, on_delete=models.CASCADE)
+    habit = models.ForeignKey(Mission, on_delete=models.CASCADE)
     content = HTMLField()
     use_yn = models.CharField(max_length=2, default='Y')
     create_date = models.DateTimeField()
     update_date = models.DateTimeField(null=True, blank=True)
-    voter = models.ManyToManyField(User, related_name='voter_habitdetail')
+    voter = models.ManyToManyField(User, related_name='voter_missiondetail')
