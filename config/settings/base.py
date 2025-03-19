@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'mptt',
     'memorization.apps.MemorizationConfig',
     'info.apps.InfoConfig',
-    'mission.apps.HabitConfig',
+    'mission.apps.MissionConfig',
     'meter.apps.MeterConfig',
     'todo.apps.TodoConfig',
     'django.contrib.admin',
