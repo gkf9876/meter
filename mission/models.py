@@ -13,13 +13,13 @@ class Mission(models.Model):
     notice_yn = models.BooleanField(default=False)
     create_date = models.DateTimeField()
     update_date = models.DateTimeField(null=True, blank=True)
-    file = models.ManyToManyField(File, related_name='file_habit')
-    voter = models.ManyToManyField(User, related_name='voter_habit')
+    file = models.ManyToManyField(File, related_name='file_mission')
+    voter = models.ManyToManyField(User, related_name='voter_mission')
     viewcount = models.ManyToManyField(User, related_name='viewcount_mission')
 
 class MissionDetail(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    habit = models.ForeignKey(Mission, on_delete=models.CASCADE)
+    mission = models.ForeignKey(Mission, on_delete=models.CASCADE)
     content = HTMLField()
     use_yn = models.CharField(max_length=2, default='Y')
     create_date = models.DateTimeField()
