@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'mission.apps.MissionConfig',
     'meter.apps.MeterConfig',
     'todo.apps.TodoConfig',
+    'schedule.apps.ScheduleConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

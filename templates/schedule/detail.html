@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load schedule_filter %}
+{% block content %}
+<div class="container my-3">
+    <!-- message 표시 -->
+    {% if messages %}
+    <div class="alert alert-danger my-3" role="alert">
+        {% for message in messages %}
+            <strong>{{ message.tags }}</strong>
+            <ul><li>{{ message.message }}</li></ul>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <!-- 일정 -->
+    <h2 class="border-bottom py-2">{{ schedule.subject }}</h2>
+    <div class="card my-3">
+        <div class="card-body">
+            <div style="width:800px">
+                <canvas id="scheduleChart" width="200" height="200"></canvas>
+            </div>
+            <div class="card-text">{{ schedule.content|safe }}</div>
+            <div class="d-flex justify-content-end">
+                {% if schedule.update_date %}
+                <div class="badge bg-light text-dark p-2 text-start mx-3">
+                    <div class="mb-2">modified at</div>
+                    <div>{{ schedule.update_date }}</div>
+                </div>
+                {% endif %}
+                <div class="badge bg-light text-dark p-2 text-start">
+                    <div class="mb-2">{{ schedule.author.username }}</div>
+                    <div>{{ schedule.create_date }}</div>
+                </div>
+            </div>
+            <div class="my-3">
+                {% if schedule.file.count > 0 %}
+                <ul class="list-group">
+                    {% for file in schedule.file.all %}
+                        <li class="list-group-item">
+                            <a href="{% url 'common:download_file' file.id %}" class="text-decoration-none">
+                                <img src="{% static 'icon/download.svg' %}" alt="Download SVG">
+                            </a>
+                            {{ file.name }}
+                            <span class="text-danger small mx-2">{{ file.file.size|div:1024|div:1024|floatformat:2 }}MB</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            <div class="my-3">
+                {% if request.user == schedule.author %}
+                <a href="{% url 'schedule:modify' schedule.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
+                <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'schedule:delete' schedule.id %}">삭제</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!-- 실천내용 -->
+    <h5 class="border-bottom my-3 py-2">{{ schedule.scheduledetail_set|filter_useYn:'Y'|length }}개의 일정이 있습니다.</h5>
+    {% for scheduledetail in schedule.scheduledetail_set|filter_useYn:'Y' %}
+    <a id="scheduledetail_{{ scheduledetail.id }}"></a>
+    <div class="card my-3">
+        <div class="card-body">
+            <div class="card-text">{{ scheduledetail.content|safe }}</div>
+            <div class="d-flex justify-content-end">
+                {% if scheduledetail.update_date %}
+                <div class="badge bg-light text-dark p-2 text-start mx-3">
+                    <div class="mb-2">modified at</div>
+                    <div>{{ scheduledetail.update_date }}</div>
+                </div>
+                {% endif %}
+                <div class="badge bg-light text-dark p-2 text-start">
+                    <div class="mb-2">{{ scheduledetail.author.username }}</div>
+                    <div>{{ scheduledetail.create_date }}</div>
+                </div>
+            </div>
+            <div class="my-3">
+                {% if request.user == scheduledetail.author %}
+                <a href="{% url 'schedule:detail_modify' scheduledetail.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
+                <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'schedule:detail_delete' scheduledetail.id %}">삭제</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <form action="{% url 'schedule:detail_create' schedule.id %}" method="post" class="my-3">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+        <div class="mb-3">
+            <label for="content" class="form-label">일정내용</label>
+            <textarea {% if not user.is_authenticated %}disabled{% endif %} name="content" id="content" class="form-control" rows="10"></textarea>
+        </div>
+        <input type="submit" value="일정등록" class="btn btn-primary">
+    </form>
+</div>
+{% endblock %}
+{% block script %}
+<script src="https://cdn.tiny.cloud/1/c9h82kl7bvgxzpopk85v2c9wu1nyqyev8vrhl9ll2a7gdxfg/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+<script type="text/javascript">
+    tinymce.init({
+        selector:'#content',
+        height: '500px',
+        menubar: false,
+        statusbar: false,
+        paste_data_images: true,
+        plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern codesample',
+        toolbar1: 'formatselect | bold italic strikethrough forecolor backcolor| fontsizeselect | link | alignleft aligncenter alignright alignjustify | numlist bullist table outdent indent | removeformat',
+        toolbar2: 'image media | charmap emoticons'
+    });
+
+    const ctx = document.getElementById('scheduleChart').getContext('2d');
+    const scheduleChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ labels|safe }},
+            datasets: [{
+                data: {{ values|safe }},
+                backgroundColor: {{ colors|safe }},
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const val = context.raw || 0;
+                            const hours = Math.floor(val / 60);
+                            const mins = val % 60;
+                            return `${context.label}: ${hours>0?hours+'시간 ':''}${mins>0?mins+'분':''}`;
+                        }
+                    }
+                },
+                datalabels: {
+                    color: '#000',
+                    formatter: function(value, context) {
+                        return context.chart.data.labels[context.dataIndex];
+                    },
+                    font: { size: 10 }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+
+    const delete_elements = document.getElementsByClassName("delete");
+    Array.from(delete_elements).forEach(function(element){
+        element.addEventListener('click', function(){
+            if(confirm("정말로 삭제하시겠습니까?")){
+                location.href = this.dataset.uri;
+            }
+        });
+    });
+</script>
+{% endblock %}

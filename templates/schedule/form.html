@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load schedule_filter %}
+{% block content %}
+<div class="container">
+    <h5 class="my-3 border-bottom pb-2">일정등록</h5>
+    <!-- message 표시 -->
+    {% if messages %}
+    <div class="alert alert-danger my-3" role="alert">
+        {% for message in messages %}
+            <strong>{{ message.tags }}</strong>
+            <ul><li>{{ message.message }}</li></ul>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+        {% include "formset_errors.html" %}
+        <div class="mb-3">
+            <label for="subject" class="form-label">제목</label>
+            <input type="text" class="form-control" name="subject" id="subject" value="{{ form.subject.value|default_if_none:'' }}">
+        </div>
+        {% if request.user.is_staff %}
+        <div class="mb-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="notice_yn" id="notice_yn" {% if form.notice_yn.value %}checked{% endif %}>
+                <label class="form-check-label" for="notice_yn">공지여부</label>
+            </div>
+        </div>
+        {% endif %}
+        <div class="mb-3">
+            <label for="content" class="form-label">일정</label>
+            <div style="width:800px">
+                <canvas id="scheduleChart" width="200" height="200"></canvas>
+            </div>
+            {{ formset.management_form }}
+            <div id="form-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">일정내용</th>
+                            <th scope="col">시작시간</th>
+                            <th scope="col">종료시간</th>
+                            <th scope="col">색상</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for form in formset %}
+                            <tr class="schedule-item">
+                                <th scope="row">
+                                    <input type="hidden" id="{{ form.id.id_for_label }}" name="{{ form.id.html_name }}" value="{{ form.id.value|default_if_none:'' }}">
+                                    <input type="hidden" id="id_form-{{ forloop.counter0 }}-use_yn" name="form-{{ forloop.counter0 }}-use_yn" value="Y">
+                                    {{ forloop.counter }}
+                                </th>
+                                <td>
+                                    <input type="text" id="id_form-{{ forloop.counter0 }}-title" name="form-{{ forloop.counter0 }}-title" class="form-control" placeholder="예: 아침운동" value="{{ form.title.value|default_if_none:'' }}">
+                                </td>
+                                <td>
+                                    <input type="time" id="id_form-{{ forloop.counter0 }}-start_time" name="form-{{ forloop.counter0 }}-start_time" class="form-control" value="{{ form.start_time.value|time:'H:i' }}">
+                                </td>
+                                <td>
+                                    <input type="time" id="id_form-{{ forloop.counter0 }}-end_time" name="form-{{ forloop.counter0 }}-end_time" class="form-control" value="{{ form.end_time.value|time:'H:i' }}">
+                                </td>
+                                <td>
+                                    <input type="text" id="id_form-{{ forloop.counter0 }}-color" name="form-{{ forloop.counter0 }}-color" class="form-control" value="{{ form.color.value }}" readonly style="background:{{ form.color.value }};color:white;text-align:center;">
+                                </td>
+                                <td>
+                                    <button type="button" id="form-{{ forloop.counter0 }}-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        <!-- 숨겨진 empty_form (템플릿용) -->
+                        <tr id="empty-form" style="display:none;">
+                            <th scope="row">
+                                <input type="hidden" id="{{ formset.empty_form.id.id_for_label }}" name="{{ formset.empty_form.id.html_name }}" value="">
+                                <input type="hidden" id="id_form-__prefix__-use_yn" name="form-__prefix__-use_yn" value="Y">
+                            </th>
+                            <td>
+                                <input type="text" id="id_form-__prefix__-title" name="form-__prefix__-title" class="form-control" placeholder="예: 아침운동" value="{{ formset.empty_form.title.value|default_if_none:'' }}">
+                            </td>
+                            <td>
+                                <input type="time" id="id_form-__prefix__-start_time" name="form-__prefix__-start_time" class="form-control" value="{{ formset.empty_form.start_time.value }}">
+                            </td>
+                            <td>
+                                <input type="time" id="id_form-__prefix__-end_time" name="form-__prefix__-end_time" class="form-control" value="{{ formset.empty_form.end_time.value }}">
+                            </td>
+                            <td>
+                                <input type="text" id="id_form-__prefix__-color" name="form-__prefix__-color" class="form-control" value="{{ formset.empty_form.color.value }}" readonly style="background:{{ form.color.value }};color:white;text-align:center;">
+                            </td>
+                            <td>
+                                <button type="button" id="d_form-__prefix__-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button type="button" class="btn btn-secondary mb-3" id="addItem">+ 일정 추가</button>
+        </div>
+        <div class="mb-3">
+            <label for="content" class="form-label">내용</label>
+            <textarea class="form-control" name="content" id="content" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
+        </div>
+        <div class="mb-3">
+            {% if form.instance.file.count > 0 %}
+            <ul class="list-group">
+                {% for file in form.instance.file.all %}
+                <li class="list-group-item">
+                    <a href="javascript:void(0)" class="deleteFile text-decoration-none">
+                        <img src="{% static 'icon/dash-circle.svg' %}" alt="Download SVG">
+                    </a>
+                    <a href="{% url 'common:download_file' file.id %}" class="text-decoration-none">
+                        <img src="{% static 'icon/download.svg' %}" alt="Download SVG">
+                    </a>
+                    {{ file.name }}
+                    <span class="text-danger small mx-2">{{ file.file.size|div:1024|div:1024 }}MB</span>
+                    <input type="hidden" id="attached_file_{{ forloop.counter }}" name="attached_file" value="{{ file.id }}"/>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            <input type="file" class="form-control" name="file"  id="file" multiple>
+        </div>
+        <button type="submit" class="btn btn-primary">저장하기</button>
+    </form>
+</div>
+{% endblock %}
+{% block script %}
+    <script src="https://cdn.tiny.cloud/1/c9h82kl7bvgxzpopk85v2c9wu1nyqyev8vrhl9ll2a7gdxfg/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script>
+        tinymce.init({
+            selector:'#content',
+            height: '500px',
+            menubar: false,
+            statusbar: false,
+            paste_data_images: true,
+            plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern codesample imagetools',
+            toolbar1: 'formatselect | bold italic strikethrough forecolor backcolor| fontsizeselect | link | alignleft aligncenter alignright alignjustify | numlist bullist table outdent indent | removeformat',
+            toolbar2: 'image media | charmap emoticons',
+            images_upload_url: '/common/upload_image/',  // Django의 이미지 업로드 API URL
+            automatic_uploads: true,
+        });
+
+        const deleteFile_elements = document.getElementsByClassName("deleteFile");
+        Array.from(deleteFile_elements).forEach(function(element){
+            element.addEventListener('click', function(){
+                var listItem = this.parentElement;
+                if (listItem.classList.contains('delete')) {
+                    element.querySelector('img').src = "{% static 'icon/dash-circle.svg' %}";
+                    listItem.classList.remove('delete');
+                    var hiddenInput = listItem.querySelector('[name="delete_attached_file"]');
+                    if (hiddenInput) {
+                        hiddenInput.setAttribute('name', 'attached_file');
+                    }
+                }else{
+                    element.querySelector('img').src = "{% static 'icon/x-circle.svg' %}";
+                    listItem.classList.add('delete');
+                    var hiddenInput = listItem.querySelector('[name="attached_file"]');
+                    if (hiddenInput) {
+                        hiddenInput.setAttribute('name', 'delete_attached_file');
+                    }
+                }
+            });
+        });
+
+        const formContainer = document.querySelector("#form-container tbody");
+        const addItemBtn = document.getElementById("addItem");
+        const totalForms = document.getElementById("id_form-TOTAL_FORMS");
+
+        function hslToHex(h, s, l) {
+            s /= 100;
+            l /= 100;
+
+            const k = n => (n + h / 30) % 12;
+            const a = s * Math.min(l, 1 - l);
+            const f = n =>
+                Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1))));
+
+            return "#" + [f(0), f(8), f(4)]
+                .map(x => x.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        // 시작 시간 기반 색상
+        function colorFromStartTime(timeStr) {
+            if (!timeStr) return '#90CAF9';
+            const [hour, minute] = timeStr.split(':').map(Number);
+            const totalMinutes = hour*60 + minute;
+            const hue = totalMinutes * 360 / 1440 ;
+            return hslToHex(hue, 70, 60); // HEX 값 반환
+        }
+
+        addItemBtn.addEventListener("click", function() {
+            let formNum = parseInt(totalForms.value);
+            let emptyForm = document.getElementById("empty-form");
+            const newRow = emptyForm.cloneNode(true); // tr 전체 복제
+            newRow.removeAttribute("id");             // id 속성 제거
+            let newForm = newRow.outerHTML.replace(/__prefix__/g, formNum);
+
+            // 새로운 행 DOM으로 삽입
+            const temp = document.createElement("tbody");
+            temp.innerHTML = newForm;
+            const newTrRow = temp.querySelector("tr");
+            newTrRow.style.display = ""; // 보이게
+            newTrRow.classList.add('schedule-item');
+
+            formContainer.insertBefore(newTrRow, emptyForm);
+
+            // 총 폼 개수 증가
+            totalForms.value = formNum + 1;
+
+            // 방금 추가된 요소를 선택
+            const insertNewRow = formContainer.querySelector('[name="form-' + formNum + '-start_time"]').closest("tr");
+
+            // 이벤트 바인딩
+            const titleInput = insertNewRow.querySelector('[name="form-' + formNum + '-title"]');
+            const startInput = insertNewRow.querySelector('[name="form-' + formNum + '-start_time"]');
+            const endInput = insertNewRow.querySelector('[name="form-' + formNum + '-end_time"]');
+            const colorInput = insertNewRow.querySelector('[name="form-' + formNum + '-color"]');
+
+            titleInput.addEventListener('change', (e) => {
+                updateChart();
+            });
+
+            startInput.addEventListener('change', (e) => {
+                const newColor = colorFromStartTime(e.target.value);
+                colorInput.value = newColor;
+                colorInput.style.background = newColor;
+                updateChart();
+            });
+
+            endInput.addEventListener('change', (e) => {
+                updateChart();
+            });
+        });
+
+        const ctx = document.getElementById('scheduleChart').getContext('2d');
+        let scheduleChart = null;
+
+        // 현재 일정 데이터 가져오기
+        function getScheduleData() {
+            const rows = formContainer.querySelectorAll(".schedule-item");
+            console.log(rows);
+            const data = Array.from(rows).map((item, index) => ({
+                title: item.querySelector(`[name=form-${index}-title]`).value,
+                start_time: item.querySelector(`[name=form-${index}-start_time]`).value,
+                end_time: item.querySelector(`[name=form-${index}-end_time]`).value,
+                color: item.querySelector(`[name=form-${index}-color]`).value,
+                duration: calculateDuration(
+                    item.querySelector(`[name=form-${index}-start_time]`).value,
+                    item.querySelector(`[name=form-${index}-end_time]`).value
+                )
+            }));
+            return data;
+        }
+
+        // 시작~종료 시간 → 분 단위 계산
+        function calculateDuration(start, end) {
+            if (!start || !end) return 0;
+            const [sh, sm] = start.split(':').map(Number);
+            const [eh, em] = end.split(':').map(Number);
+            let dur = (eh*60+em) - (sh*60+sm);
+            if (dur < 0) dur += 1440; // 24시 넘어가도 처리
+            return dur;
+        }
+
+        // 차트 업데이트
+        function updateChart() {
+            const dataArr = getScheduleData();
+            const labels = dataArr.map(d => d.title || '');
+            const durations = dataArr.map(d => d.duration);
+            const colors = dataArr.map(d => d.color);
+
+            if (scheduleChart) {
+                scheduleChart.data.labels = labels;
+                scheduleChart.data.datasets[0].data = durations;
+                scheduleChart.data.datasets[0].backgroundColor = colors;
+                scheduleChart.update();
+            } else {
+                scheduleChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: durations,
+                            backgroundColor: colors
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const val = context.raw || 0;
+                                        const hours = Math.floor(val / 60);
+                                        const mins = val % 60;
+                                        return `${context.label}: ${hours>0?hours+'시간 ':''}${mins>0?mins+'분':''}`;
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                color: '#000',
+                                formatter: function(value, context) {
+                                    return context.chart.data.labels[context.dataIndex];
+                                },
+                                font: { size: 10 }
+                            }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+            }
+        }
+
+        // 초기 차트 렌더
+        updateChart();
+
+        const deleteItem_elements = document.getElementsByClassName("deleteItem");
+        Array.from(deleteItem_elements).forEach(function(element){
+            element.addEventListener('click', function(){
+                const row = this.closest("tr");
+                const useYn = row.querySelector(`input[name$="-use_yn"]`);
+
+                if (row.classList.contains("table-danger")) {
+                    // 삭제 해제
+                    useYn.value = "Y";
+                    row.classList.remove("table-danger");
+                } else {
+                    // 삭제 처리
+                    useYn.value = "N";
+                    row.classList.add("table-danger");
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- 답변 수정 -->
+<div class="container my-3">
+    <form method="post">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+        <div class="mb-3">
+            <label for="content" class="form-label">실천내용</label>
+            <canvas id="scheduleChart" width="400" height="400"></canvas>
+            <textarea class="form-control" name="content" id="content" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">저장하기</button>
+    </form>
+</div>
+{% endblock %}
+{% block script %}
+    <script src="https://cdn.tiny.cloud/1/c9h82kl7bvgxzpopk85v2c9wu1nyqyev8vrhl9ll2a7gdxfg/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tinymce.init({
+            selector:'#content',
+            height: '500px',
+            menubar: false,
+            statusbar: false,
+            paste_data_images: true,
+            plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern codesample',
+            toolbar1: 'formatselect | bold italic strikethrough forecolor backcolor| fontsizeselect | link | alignleft aligncenter alignright alignjustify | numlist bullist table outdent indent | removeformat',
+            toolbar2: 'image media | charmap emoticons'
+        });
+
+        const ctx = document.getElementById('scheduleChart');
+
+        // 하루 = 24시간 = 1440분
+        const data = {
+          labels: [
+            '수면',       // 0시 ~ 6시
+            '아침운동',   // 6시 ~ 7시
+            '출근/이동',  // 7시 ~ 9시
+            '업무',       // 9시 ~ 12시
+            '점심',       // 12시 ~ 13시
+            '오후업무',   // 13시 ~ 18시
+            '퇴근/저녁',  // 18시 ~ 20시
+            '자유시간',   // 20시 ~ 24시
+          ],
+          datasets: [{
+            data: [
+              360,  // 수면 (6시간)
+              60,   // 아침운동 (1시간)
+              120,  // 출근/이동 (2시간)
+              180,  // 업무 (3시간)
+              60,   // 점심 (1시간)
+              300,  // 오후업무 (5시간)
+              120,  // 퇴근/저녁 (2시간)
+              240   // 자유시간 (4시간)
+            ],
+            backgroundColor: [
+              '#B0BEC5', '#FF8A65', '#4DB6AC',
+              '#90CAF9', '#FFD54F', '#CE93D8',
+              '#FFAB91', '#81C784'
+            ]
+          }]
+        };
+
+        const scheduleChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: data,
+          options: {
+            responsive: true,
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    let label = context.label || '';
+                    let value = context.raw || 0;
+                    let hours = Math.floor(value / 60);
+                    let mins = value % 60;
+                    let timeStr = hours > 0 ? `${hours}시간` : '';
+                    if (mins > 0) timeStr += ` ${mins}분`;
+                    return `${label}: ${timeStr}`;
+                  }
+                }
+              },
+              legend: {
+                position: 'bottom'
+              }
+            },
+            onClick: (e, elements) => {
+              if (elements.length > 0) {
+                const chartElem = elements[0];
+                const label = data.labels[chartElem.index];
+                const value = data.datasets[0].data[chartElem.index];
+                const hours = Math.floor(value / 60);
+                const mins = value % 60;
+                alert(`${label} — ${hours}시간 ${mins}분 클릭됨`);
+              }
+            }
+          }
+        });
+    </script>
+{% endblock %}
