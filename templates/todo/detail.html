@@ -14,6 +14,7 @@
     <!-- 할일 상세 -->
     <h5 class="border-bottom my-3 py-2">{{ todo.tododetail_set|filter_useYn:'Y'|length }}개의 한일이 있습니다.</h5>
     {% for todo_detail in todo.tododetail_set|filter_useYn:'Y' %}
+    <a id="tododetail_{{ todo_detail.id }}"></a>
     <div class="card my-3">
         <div class="card-body">
             <div class="card-text">{{ todo_detail.content|safe }}</div>

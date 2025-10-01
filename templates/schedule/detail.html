@@ -108,42 +108,73 @@
         plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern codesample',
         toolbar1: 'formatselect | bold italic strikethrough forecolor backcolor| fontsizeselect | link | alignleft aligncenter alignright alignjustify | numlist bullist table outdent indent | removeformat',
         toolbar2: 'image media | charmap emoticons'
-    });
+    });const hours = Array.from({length: 24}, (_, i) => `${i}시`);
 
+// 예제 데이터 (시간대별 활동량)
+const sampleData = [
+  2, 1, 0, 0, 0, 1,   // 0~5시
+  3, 5, 8, 10, 7, 4, // 6~11시
+  6, 9, 12, 15, 11, 8, // 12~17시
+  5, 3, 6, 9, 7, 4, 2 // 18~23시
+];
+
+// 균등 분할(시계 눈금용) → 모든 값이 1
+const equalParts = Array(24).fill(1);
     const ctx = document.getElementById('scheduleChart').getContext('2d');
     const scheduleChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: {{ labels|safe }},
-            datasets: [{
-                data: {{ values|safe }},
-                backgroundColor: {{ colors|safe }},
-            }]
+  type: 'doughnut',
+  data: {
+    labels: hours,
+    datasets: [
+      {
+        // 1️⃣ 시계 눈금용
+        data: equalParts,
+        backgroundColor: "rgba(0,0,0,0)", // 투명
+        borderColor: "#ccc",               // 경계선 표시 (시계 눈금)
+        borderWidth: 1
+      },
+      {
+        // 2️⃣ 실제 데이터 시각화용
+        data: sampleData,
+        backgroundColor: hours.map((_, i) =>
+          `hsl(${i * 15}, 70%, 60%)`
+        ),
+        borderWidth: 0
+      }
+    ]
+  },
+  options: {
+    cutout: '30%',   // 가운데 구멍 크기
+    rotation: -90,   // 12시가 위로
+    plugins: {
+      legend: { display: false },
+      datalabels: {
+        color: '#000',
+        font: { size: 10 },
+        formatter: (value, context) => {
+          // 첫 번째 dataset(눈금)에서만 라벨 표시
+          return context.datasetIndex === 0
+            ? context.chart.data.labels[context.dataIndex]
+            : '';
         },
-        options: {
-            plugins: {
-                legend: { position: 'bottom' },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const val = context.raw || 0;
-                            const hours = Math.floor(val / 60);
-                            const mins = val % 60;
-                            return `${context.label}: ${hours>0?hours+'시간 ':''}${mins>0?mins+'분':''}`;
-                        }
-                    }
-                },
-                datalabels: {
-                    color: '#000',
-                    formatter: function(value, context) {
-                        return context.chart.data.labels[context.dataIndex];
-                    },
-                    font: { size: 10 }
-                }
+        anchor: 'end',
+        align: 'end',
+        offset: 6
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            if (context.datasetIndex === 1) {
+              return `${context.label}: ${context.formattedValue}`;
             }
-        },
-        plugins: [ChartDataLabels]
-    });
+            return null;
+          }
+        }
+      }
+    }
+  },
+  plugins: [ChartDataLabels]
+});
 
     const delete_elements = document.getElementsByClassName("delete");
     Array.from(delete_elements).forEach(function(element){

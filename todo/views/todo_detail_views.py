@@ -3,7 +3,7 @@ import os
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from django.utils import timezone
 
 from common.models import File
@@ -37,7 +37,7 @@ def tododetail_create(request, todo_id):
                 file_instance.file = file
                 file_instance.save()
                 todo_detail.file.add(file_instance)
-            return redirect('todo:detail', todo_id=todo.id)
+            return redirect('{}#tododetail_{}'.format(resolve_url('todo:detail', todo_id=todo.id), todo_detail.id))
     else:
         form = TodoDetailForm()
     context = {'todo': todo, 'form': form}
@@ -77,7 +77,7 @@ def tododetail_modify(request, todo_detail_id):
                 if os.path.exists(file_path):
                     os.remove(file_path)
                 file.delete()
-            return redirect('todo:detail', todo_id=todo_detail.todo.id)
+            return redirect('{}#tododetail_{}'.format(resolve_url('todo:detail', todo_id=todo_detail.todo.id), todo_detail.id))
     else:
         form = TodoDetailForm(instance=todo_detail)
     context = {'form': form, 'date':todo_detail.date}
