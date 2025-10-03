@@ -66,7 +66,7 @@
                                         <input type="time" id="id_form-{{ forloop.counter0 }}-end_time" name="form-{{ forloop.counter0 }}-end_time" class="form-control" value="{{ form.end_time.value|time:'H:i' }}">
                                     </td>
                                     <td>
-                                        <input type="text" id="id_form-{{ forloop.counter0 }}-color" name="form-{{ forloop.counter0 }}-color" class="form-control" value="{{ form.color.value }}" readonly style="background:{{ form.color.value }};color:white;text-align:center;">
+                                        <input type="text" id="id_form-{{ forloop.counter0 }}-color" name="form-{{ forloop.counter0 }}-color" class="form-control" value="{{ form.color.value }}" style="background:{{ form.color.value }};color:white;text-align:center;">
                                     </td>
                                     <td>
                                         <button type="button" id="form-{{ forloop.counter0 }}-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
@@ -89,7 +89,7 @@
                                     <input type="time" id="id_form-__prefix__-end_time" name="form-__prefix__-end_time" class="form-control" value="{{ formset.empty_form.end_time.value }}">
                                 </td>
                                 <td>
-                                    <input type="text" id="id_form-__prefix__-color" name="form-__prefix__-color" class="form-control" value="{{ formset.empty_form.color.value }}" readonly style="background:{{ form.color.value }};color:white;text-align:center;">
+                                    <input type="text" id="id_form-__prefix__-color" name="form-__prefix__-color" class="form-control" value="{{ formset.empty_form.color.value }}" style="background:{{ form.color.value }};color:white;text-align:center;">
                                 </td>
                                 <td>
                                     <button type="button" id="d_form-__prefix__-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
@@ -246,7 +246,6 @@
         // 현재 일정 데이터 가져오기
         function getScheduleData() {
             const rows = formContainer.querySelectorAll(".schedule-item");
-            console.log(rows);
             const data = Array.from(rows).map((item, index) => ({
                 title: item.querySelector(`[name=form-${index}-title]`).value,
                 start_time: item.querySelector(`[name=form-${index}-start_time]`).value,
@@ -289,7 +288,9 @@
                         labels: labels,
                         datasets: [{
                             data: durations,
-                            backgroundColor: colors
+                            backgroundColor: colors,
+                            borderColor: '#0000002d',
+                            borderWidth: 2,
                         }]
                     },
                     options: {
