@@ -15,10 +15,10 @@
 </div>
 {% endblock %}
 {% block script %}
-    <script src="https://cdn.tiny.cloud/1/c9h82kl7bvgxzpopk85v2c9wu1nyqyev8vrhl9ll2a7gdxfg/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         tinymce.init({
+            license_key: 'gpl',
             selector:'#content',
             height: '500px',
             menubar: false,

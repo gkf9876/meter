@@ -9,13 +9,13 @@ input[type=submit]{
     cursor: pointer;
 }
 .tree-node.children {
-    background-image: url(/static/icon/chevron-down.svg);
+    background-image: url(/static/bootstrap/icon/chevron-down.svg);
     width: 16px;
     height: 16px;
     vertical-align: middle;
 }
 .tree-node.closed {
-    background-image: url(/static/icon/chevron-right.svg);
+    background-image: url(/static/bootstrap/icon/chevron-right.svg);
     width: 16px;
     height: 16px;
 }

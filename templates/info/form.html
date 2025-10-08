@@ -14,17 +14,19 @@
 </div>
 {% endblock %}
 {% block script %}
-    <script src="https://cdn.tiny.cloud/1/c9h82kl7bvgxzpopk85v2c9wu1nyqyev8vrhl9ll2a7gdxfg/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
     <script>
         tinymce.init({
+            license_key: 'gpl',
             selector:'#content',
             height: '500px',
             menubar: false,
             statusbar: false,
             paste_data_images: true,
-            plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern codesample',
+            plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern codesample imagetools',
             toolbar1: 'formatselect | bold italic strikethrough forecolor backcolor| fontsizeselect | link | alignleft aligncenter alignright alignjustify | numlist bullist table outdent indent | removeformat',
-            toolbar2: 'image media | charmap emoticons'
+            toolbar2: 'image media | charmap emoticons',
+            images_upload_url: '/common/upload_image/',  // Django의 이미지 업로드 API URL
+            automatic_uploads: true,
         });
     </script>
 {% endblock %}
