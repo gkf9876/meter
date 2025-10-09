@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'memorization.apps.MemorizationConfig',
     'info.apps.InfoConfig',
     'mission.apps.MissionConfig',
+    'habit.apps.HabitConfig',
     'meter.apps.MeterConfig',
     'todo.apps.TodoConfig',
     'schedule.apps.ScheduleConfig',
