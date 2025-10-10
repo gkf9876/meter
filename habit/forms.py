@@ -2,7 +2,7 @@ from django import forms
 from .models import Habit, HabitDetail
 
 class HabitForm(forms.ModelForm):
-    notice_yn = forms.BooleanField(required=False, initial='N', label='공지여부')
+    notice_yn = forms.BooleanField(required=False, initial=False, label='공지여부')
 
     class Meta:
         model = Habit
