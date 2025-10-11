@@ -38,10 +38,10 @@
                 {% for file in form.instance.file.all %}
                 <li class="list-group-item">
                     <a href="javascript:void(0)" class="deleteFile text-decoration-none">
-                        <img src="{% static 'icon/dash-circle.svg' %}" alt="Download SVG">
+                        <img src="{% static 'bootstrap/icon/dash-circle.svg' %}" alt="Download SVG">
                     </a>
                     <a href="{% url 'common:download_file' file.id %}" class="text-decoration-none">
-                        <img src="{% static 'icon/download.svg' %}" alt="Download SVG">
+                        <img src="{% static 'bootstrap/icon/download.svg' %}" alt="Download SVG">
                     </a>
                     {{ file.name }}
                     <span class="text-danger small mx-2">{{ file.file.size|div:1024|div:1024 }}MB</span>
@@ -77,14 +77,14 @@
             element.addEventListener('click', function(){
                 var listItem = this.parentElement;
                 if (listItem.classList.contains('delete')) {
-                    element.querySelector('img').src = "{% static 'icon/dash-circle.svg' %}";
+                    element.querySelector('img').src = "{% static 'bootstrap/icon/dash-circle.svg' %}";
                     listItem.classList.remove('delete');
                     var hiddenInput = listItem.querySelector('[name="delete_attached_file"]');
                     if (hiddenInput) {
                         hiddenInput.setAttribute('name', 'attached_file');
                     }
                 }else{
-                    element.querySelector('img').src = "{% static 'icon/x-circle.svg' %}";
+                    element.querySelector('img').src = "{% static 'bootstrap/icon/x-circle.svg' %}";
                     listItem.classList.add('delete');
                     var hiddenInput = listItem.querySelector('[name="attached_file"]');
                     if (hiddenInput) {

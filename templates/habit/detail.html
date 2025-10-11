@@ -35,7 +35,7 @@
                     {% for file in habit.file.all %}
                         <li class="list-group-item">
                             <a href="{% url 'common:download_file' file.id %}" class="text-decoration-none">
-                                <img src="{% static 'icon/download.svg' %}" alt="Download SVG">
+                                <img src="{% static 'bootstrap/icon/download.svg' %}" alt="Download SVG">
                             </a>
                             {{ file.name }}
                             <span class="text-danger small mx-2">{{ file.file.size|div:1024|div:1024|floatformat:2 }}MB</span>
