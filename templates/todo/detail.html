@@ -3,6 +3,14 @@
 {% load todo_filter %}
 {% block content %}
 <div class="container my-3">
+    <div class="scroll-buttons">
+        <button id="scrollTopBtn" title="상단으로">
+            <i class="fa-solid fa-arrow-up">▲</i>
+        </button>
+        <button id="scrollBottomBtn" title="하단으로">
+            <i class="fa-solid fa-arrow-down">▼</i>
+        </button>
+    </div>
     <!-- 할일 -->
     <h2 class="border-bottom py-2">{{ todo.subject }}</h2>
     <div class="my-3">
@@ -137,6 +145,16 @@
                 }
             }
         });
+    });
+
+    // 상단 이동
+    document.getElementById("scrollTopBtn").addEventListener("click", function() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    // 하단 이동
+    document.getElementById("scrollBottomBtn").addEventListener("click", function() {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     });
 </script>
 {% endblock %}
