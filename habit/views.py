@@ -9,7 +9,7 @@ from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from django.utils import timezone
 
 from common.models import File
-from common.views import move_temp_images_to_uploads
+from common.views import move_temp_images_to_uploads, delete_unused_images
 from .forms import HabitForm, HabitDetailForm
 from .models import Habit, HabitDetail
 
@@ -92,6 +92,7 @@ def modify(request, habit_id):
                 messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
                 context = {'form': form}
                 return render(request, 'habit/form.html', context)
+            delete_unused_images(habit.content, request.POST.get('content', ''))
             habit = form.save(commit=False)
             habit.update_date = timezone.now()
             habit.save()
@@ -153,6 +154,7 @@ def detail_create(request, habit_id):
 @login_required(login_url='common:login')
 def detail_modify(request, habitdetail_id):
     habitdetail = get_object_or_404(HabitDetail, pk=habitdetail_id)
+    habitdetail_content = habitdetail.content
     if request.user != habitdetail.author:
         messages.error(request, '수정권한이 없습니다')
         return redirect('habit:detail', habit_id=habitdetail.habit.id)
@@ -163,6 +165,7 @@ def detail_modify(request, habitdetail_id):
                 messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
                 context = {'habitdetail':habitdetail, 'form': form}
                 return render(request, 'habit/detail_form.html', context)
+            delete_unused_images(habitdetail_content, request.POST.get('content', ''))
             habitdetail = form.save(commit=False)
             habitdetail.update_date = timezone.now()
             habitdetail.save()

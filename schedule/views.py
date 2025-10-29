@@ -9,7 +9,7 @@ from django.forms import modelformset_factory
 from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from django.utils import timezone
 
-from common.views import move_temp_images_to_uploads
+from common.views import move_temp_images_to_uploads, delete_unused_images
 from common.models import File
 from .forms import ScheduleForm, ScheduleDetailForm, ScheduleItemForm
 from .models import Schedule, ScheduleDetail, ScheduleItem
@@ -95,6 +95,7 @@ def create(request):
 def modify(request, schedule_id):
     schedule = get_object_or_404(Schedule, pk=schedule_id)
     ScheduleFormSet = modelformset_factory(ScheduleItem, form=ScheduleItemForm, extra=0, can_delete=True)
+    schedule_content = schedule.content
     if request.user != schedule.author:
         messages.error(request, '수정권한이 없습니다')
         return redirect('schedule:detail', schedule_id=schedule.id)
@@ -114,6 +115,7 @@ def modify(request, schedule_id):
                 messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
                 context = {'form': form, 'formset': formset}
                 return render(request, 'schedule/form.html', context)
+            delete_unused_images(schedule_content, request.POST.get('content', ''))
             schedule = form.save(commit=False)
             schedule.update_date = timezone.now()
             schedule.save()
@@ -180,6 +182,7 @@ def detail_create(request, schedule_id):
 @login_required(login_url='common:login')
 def detail_modify(request, scheduledetail_id):
     scheduledetail = get_object_or_404(ScheduleDetail, pk=scheduledetail_id)
+    scheduledetail_content = scheduledetail.content
     if request.user != scheduledetail.author:
         messages.error(request, '수정권한이 없습니다')
         return redirect('schedule:detail', schedule_id=scheduledetail.schedule.id)
@@ -190,6 +193,7 @@ def detail_modify(request, scheduledetail_id):
                 messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
                 context = {'scheduledetail':scheduledetail, 'form': form}
                 return render(request, 'schedule/detail_form.html', context)
+            delete_unused_images(scheduledetail_content, request.POST.get('content', ''))
             scheduledetail = form.save(commit=False)
             scheduledetail.update_date = timezone.now()
             scheduledetail.save()

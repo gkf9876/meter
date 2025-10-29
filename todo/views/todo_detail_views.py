@@ -7,7 +7,7 @@ from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from django.utils import timezone
 
 from common.models import File
-from common.views import move_temp_images_to_uploads
+from common.views import move_temp_images_to_uploads, delete_unused_images
 from ..forms import TodoDetailForm
 from ..models import Todo, TodoDetail
 from datetime import datetime
@@ -52,6 +52,7 @@ def tododetail_create(request, todo_id):
 @login_required(login_url='common:login')
 def tododetail_modify(request, todo_detail_id):
     todo_detail = get_object_or_404(TodoDetail, pk=todo_detail_id, use_yn='Y')
+    todo_detail_content = todo_detail.content
     if request.user != todo_detail.author:
         messages.error(request, '수정권한이 없습니다')
         return redirect('todo:detail', todo_id=todo_detail.todo.id)
@@ -70,6 +71,7 @@ def tododetail_modify(request, todo_detail_id):
                 date = datetime.strptime(request.POST.get('date'), '%Y-%m-%d')
                 context = {'form': form, 'date':date}
                 return render(request, 'todo/detail.html', context)
+            delete_unused_images(todo_detail_content, request.POST.get('content', ''))
             todo_detail = form.save(commit=False)
             todo_detail.update_date = timezone.now()
             todo_detail.save()

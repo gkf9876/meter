@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from django.utils import timezone
 
-from common.views import move_temp_images_to_uploads
+from common.views import move_temp_images_to_uploads, delete_unused_images
 from common.models import File
 from .forms import MissionForm, MissionDetailForm
 from .models import Mission, MissionDetail
@@ -74,6 +74,7 @@ def create(request):
 @login_required(login_url='common:login')
 def modify(request, mission_id):
     mission = get_object_or_404(Mission, pk=mission_id)
+    mission_content = mission.content
     if request.user != mission.author:
         messages.error(request, '수정권한이 없습니다')
         return redirect('mission:detail', mission_id=mission.id)
@@ -92,6 +93,7 @@ def modify(request, mission_id):
                 messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
                 context = {'form': form}
                 return render(request, 'mission/form.html', context)
+            delete_unused_images(mission_content, request.POST.get('content', ''))
             mission = form.save(commit=False)
             mission.update_date = timezone.now()
             mission.save()
@@ -153,6 +155,7 @@ def detail_create(request, mission_id):
 @login_required(login_url='common:login')
 def detail_modify(request, missiondetail_id):
     missiondetail = get_object_or_404(MissionDetail, pk=missiondetail_id)
+    missiondetail_content = missiondetail.content
     if request.user != missiondetail.author:
         messages.error(request, '수정권한이 없습니다')
         return redirect('mission:detail', mission_id=missiondetail.mission.id)
@@ -163,6 +166,7 @@ def detail_modify(request, missiondetail_id):
                 messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
                 context = {'missiondetail':missiondetail, 'form': form}
                 return render(request, 'mission/detail_form.html', context)
+            delete_unused_images(missiondetail_content, request.POST.get('content', ''))
             missiondetail = form.save(commit=False)
             missiondetail.update_date = timezone.now()
             missiondetail.save()

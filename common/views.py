@@ -98,3 +98,19 @@ def move_temp_images_to_uploads(content):
             return False
 
     return True
+
+def get_image_filenames_from_content(content):
+    """본문 HTML에서 이미지 파일명 추출"""
+    return re.findall(r'/common/serve_image/(\d+)', content)
+
+def delete_unused_images(old_content, new_content):
+    """기존 본문에는 있었지만, 수정 후 본문에는 없는 이미지 삭제"""
+    old_image_ids = set(get_image_filenames_from_content(old_content))
+    new_image_ids = set(get_image_filenames_from_content(new_content))
+
+    unused_image_ids = old_image_ids - new_image_ids  # 삭제 대상
+    for file_id in unused_image_ids:
+        unused_file = get_object_or_404(File, pk=file_id)
+        file_path = unused_file.file.path
+        if os.path.exists(file_path):
+            os.remove(file_path)

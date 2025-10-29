@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 
-from common.views import move_temp_images_to_uploads
+from common.views import move_temp_images_to_uploads, delete_unused_images
 from .forms import InfoForm
 from .models import Info
 
@@ -35,6 +35,7 @@ def create(request):
 @login_required(login_url='common:login')
 def modify(request, info_id):
     info = get_object_or_404(Info, pk=info_id)
+    info_content = info.content
     if request.user != info.author:
         messages.error(request, '수정권한이 없습니다')
         return redirect('info:index')
@@ -45,6 +46,7 @@ def modify(request, info_id):
                 messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
                 context = {'form': form}
                 return render(request, 'info/form.html', context)
+            delete_unused_images(info_content, request.POST.get('content', ''))
             info = form.save(commit=False)
             info.update_date = timezone.now()
             info.save()

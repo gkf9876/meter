@@ -5,7 +5,7 @@ from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 
-from common.views import move_temp_images_to_uploads
+from common.views import move_temp_images_to_uploads, delete_unused_images
 from .forms import MemorizationForm
 from .models import Memorization
 
@@ -55,6 +55,7 @@ def create(request):
 @login_required(login_url='common:login')
 def modify(request, memorization_id):
     memorization = get_object_or_404(Memorization, pk=memorization_id, author_id=request.user.id, use_yn='Y')
+    memorization_content = memorization.content
     if request.user != memorization.author:
         messages.error(request, '수정권한이 없습니다')
         return redirect('memorization:detail', memorization_id=memorization.id)
@@ -65,6 +66,7 @@ def modify(request, memorization_id):
                 messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
                 context = {'form': form}
                 return render(request, 'memorization/form.html', context)
+            delete_unused_images(memorization_content, request.POST.get('content', ''))
             memorization = form.save(commit=False)
             memorization.modify_date = timezone.now()
             memorization.save()
