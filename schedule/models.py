@@ -32,7 +32,6 @@ class Schedule(models.Model):
     update_date = models.DateTimeField(null=True, blank=True)
     schedule_item = models.ManyToManyField(ScheduleItem, related_name='item_schedule')
     file = models.ManyToManyField(File, related_name='file_schedule')
-    media_file = models.ManyToManyField(File, related_name='media_file_schedule')
 
 class ScheduleDetail(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)

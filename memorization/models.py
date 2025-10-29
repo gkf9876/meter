@@ -11,4 +11,3 @@ class Memorization(models.Model):
     use_yn = models.CharField(max_length=2, default='Y')
     create_date = models.DateTimeField()
     update_date = models.DateTimeField(null=True, blank=True)
-    media_file = models.ManyToManyField(File, related_name='media_file_memorization')

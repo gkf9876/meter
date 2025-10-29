@@ -14,7 +14,6 @@ class Mission(models.Model):
     create_date = models.DateTimeField()
     update_date = models.DateTimeField(null=True, blank=True)
     file = models.ManyToManyField(File, related_name='file_mission')
-    media_file = models.ManyToManyField(File, related_name='media_file_mission')
     voter = models.ManyToManyField(User, related_name='voter_mission')
     viewcount = models.ManyToManyField(User, related_name='viewcount_mission')
 
