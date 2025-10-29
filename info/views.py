@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 
+from common.views import move_temp_images_to_uploads
 from .forms import InfoForm
 from .models import Info
 
@@ -17,6 +18,10 @@ def create(request):
     if request.method == 'POST':
         form = InfoForm(request.POST)
         if form.is_valid():
+            if not move_temp_images_to_uploads(request.POST.get('content', '')):
+                messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
+                context = {'form': form}
+                return render(request, 'info/form.html', context)
             info = form.save(commit=False)
             info.author = request.user
             info.create_date = timezone.now()
@@ -36,6 +41,10 @@ def modify(request, info_id):
     if request.method == "POST":
         form = InfoForm(request.POST, instance=info)
         if form.is_valid():
+            if not move_temp_images_to_uploads(request.POST.get('content', '')):
+                messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
+                context = {'form': form}
+                return render(request, 'info/form.html', context)
             info = form.save(commit=False)
             info.update_date = timezone.now()
             info.save()

@@ -238,7 +238,7 @@ TINYMCE_DEFAULT_CONFIG = {
     'height': 600,
     "file_picker_types": "image",
     "automatic_uploads": True,
-    "images_upload_url": "/common/upload_image/",  # 이미지 업로드 경로
+    "images_upload_url": "/common/temp_upload_image/",  # 이미지 업로드 경로
 }
 
 # 첨부파일 위치

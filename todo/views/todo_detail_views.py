@@ -7,6 +7,7 @@ from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from django.utils import timezone
 
 from common.models import File
+from common.views import move_temp_images_to_uploads
 from ..forms import TodoDetailForm
 from ..models import Todo, TodoDetail
 from datetime import datetime
@@ -22,6 +23,11 @@ def tododetail_create(request, todo_id):
             total_files_size = sum([file.size for file in files])
             if total_files_size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
                 messages.error(request, '첨부파일의 총용량이 %dMB를 초과할 수 없습니다.' % (settings.FILE_UPLOAD_MAX_MEMORY_SIZE/ 1024 / 1024))
+                date = datetime.strptime(request.POST.get('date'), '%Y-%m-%d')
+                context = {'todo': todo, 'form': form, 'date': date}
+                return render(request, 'todo/detail.html', context)
+            if not move_temp_images_to_uploads(request.POST.get('content', '')):
+                messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
                 date = datetime.strptime(request.POST.get('date'), '%Y-%m-%d')
                 context = {'todo': todo, 'form': form, 'date': date}
                 return render(request, 'todo/detail.html', context)
@@ -59,6 +65,11 @@ def tododetail_modify(request, todo_detail_id):
                 date = datetime.strptime(request.POST.get('date'), '%Y-%m-%d')
                 context = {'form': form, 'date':date}
                 return render(request, 'todo/detail_form.html', context)
+            if not move_temp_images_to_uploads(request.POST.get('content', '')):
+                messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
+                date = datetime.strptime(request.POST.get('date'), '%Y-%m-%d')
+                context = {'form': form, 'date':date}
+                return render(request, 'todo/detail.html', context)
             todo_detail = form.save(commit=False)
             todo_detail.update_date = timezone.now()
             todo_detail.save()

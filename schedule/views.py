@@ -9,6 +9,7 @@ from django.forms import modelformset_factory
 from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from django.utils import timezone
 
+from common.views import move_temp_images_to_uploads
 from common.models import File
 from .forms import ScheduleForm, ScheduleDetailForm, ScheduleItemForm
 from .models import Schedule, ScheduleDetail, ScheduleItem
@@ -62,6 +63,10 @@ def create(request):
                 messages.error(request, '첨부파일의 총용량이 %dMB를 초과할 수 없습니다.' % (settings.FILE_UPLOAD_MAX_MEMORY_SIZE/ 1024 / 1024))
                 context = {'form': form, 'formset': formset}
                 return render(request, 'schedule/form.html', context)
+            if not move_temp_images_to_uploads(request.POST.get('content', '')):
+                messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
+                context = {'form': form, 'formset': formset}
+                return render(request, 'schedule/form.html', context)
             schedule = form.save(commit=False)
             schedule.author = request.user
             schedule.create_date = timezone.now()
@@ -103,6 +108,10 @@ def modify(request, schedule_id):
             total_files_size += sum([file.file.size for file in schedule.file.all() if str(file.id) not in delete_file_id_list])
             if total_files_size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
                 messages.error(request, '첨부파일의 총용량이 %dMB를 초과할 수 없습니다.' % (settings.FILE_UPLOAD_MAX_MEMORY_SIZE/ 1024 / 1024))
+                context = {'form': form, 'formset': formset}
+                return render(request, 'schedule/form.html', context)
+            if not move_temp_images_to_uploads(request.POST.get('content', '')):
+                messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
                 context = {'form': form, 'formset': formset}
                 return render(request, 'schedule/form.html', context)
             schedule = form.save(commit=False)
@@ -152,6 +161,10 @@ def detail_create(request, schedule_id):
     if request.method == "POST":
         form = ScheduleDetailForm(request.POST)
         if form.is_valid():
+            if not move_temp_images_to_uploads(request.POST.get('content', '')):
+                messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
+                context = {'schedule': schedule, 'form': form}
+                return render(request, 'schedule/detail.html', context)
             scheduledetail = form.save(commit=False)
             scheduledetail.author = request.user
             scheduledetail.create_date = timezone.now()
@@ -173,6 +186,10 @@ def detail_modify(request, scheduledetail_id):
     if request.method == "POST":
         form = ScheduleDetailForm(request.POST, instance=scheduledetail)
         if form.is_valid():
+            if not move_temp_images_to_uploads(request.POST.get('content', '')):
+                messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
+                context = {'scheduledetail':scheduledetail, 'form': form}
+                return render(request, 'schedule/detail_form.html', context)
             scheduledetail = form.save(commit=False)
             scheduledetail.update_date = timezone.now()
             scheduledetail.save()

@@ -30,6 +30,7 @@ class TodoDetail(models.Model):
     date = models.DateTimeField()
     content = HTMLField()
     file = models.ManyToManyField(File, related_name='file_tododetail')
+    media_file = models.ManyToManyField(File, related_name='media_file_tododetail')
     use_yn = models.CharField(max_length=2, default='Y')
     create_date = models.DateTimeField()
     update_date = models.DateTimeField(null=True, blank=True)

@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 
+from common.views import move_temp_images_to_uploads
 from .forms import MemorizationForm
 from .models import Memorization
 
@@ -35,9 +36,13 @@ def detail(request, memorization_id):
 @login_required(login_url='common:login')
 def create(request):
     if request.method == 'POST':
-        memorization_form = MemorizationForm(request.POST)
-        if memorization_form.is_valid():
-            memorization = memorization_form.save(commit=False)
+        form = MemorizationForm(request.POST)
+        if form.is_valid():
+            if not move_temp_images_to_uploads(request.POST.get('content', '')):
+                messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
+                context = {'form': form}
+                return render(request, 'memorization/form.html', context)
+            memorization = form.save(commit=False)
             memorization.author = request.user
             memorization.create_date = timezone.now()
             memorization.save()
@@ -56,6 +61,10 @@ def modify(request, memorization_id):
     if request.method == "POST":
         form = MemorizationForm(request.POST, instance=memorization)
         if form.is_valid():
+            if not move_temp_images_to_uploads(request.POST.get('content', '')):
+                messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
+                context = {'form': form}
+                return render(request, 'memorization/form.html', context)
             memorization = form.save(commit=False)
             memorization.modify_date = timezone.now()
             memorization.save()

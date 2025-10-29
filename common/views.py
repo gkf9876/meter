@@ -1,6 +1,7 @@
-import os
+import os, shutil, re
 import time
 
+from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponse, HttpResponseNotFound
 from django.contrib.auth.decorators import login_required
@@ -47,7 +48,7 @@ def download_file(request, file_id):
         return HttpResponseNotFound("File not found")
 
 @csrf_exempt
-def upload_image(request):
+def temp_upload_image(request):
     if request.method == 'POST' and request.FILES.get('file'):
         image = request.FILES['file']
         filename, ext = os.path.splitext(image.name)
@@ -56,7 +57,8 @@ def upload_image(request):
         file_instance = File()
         file_instance.name = new_filename
         file_instance.file = image
-        file_instance.save()
+        file_path = os.path.join('editor', 'temp', new_filename)
+        file_instance.file.save(file_path, image, save=True)
 
         image_url = f'/common/serve_image/{file_instance.id}'
         return JsonResponse({'location': image_url})
@@ -71,3 +73,28 @@ def serve_image(request, file_id):
         return HttpResponse(open(file_path, 'rb'), content_type='image/jpeg')
     else:
         return HttpResponseNotFound("File not found")
+
+def move_temp_images_to_uploads(content):
+    """본문 중 temp 이미지를 upload/editor로 이동"""
+    file_ids = re.findall(r'/common/serve_image/(\d+)', content)
+    for file_id in file_ids:
+        temp_upload_file = get_object_or_404(File, pk=file_id)
+
+        if os.path.exists(temp_upload_file.file.path):
+            temp_file_path = temp_upload_file.file.path
+            new_relative_path = os.path.join('uploads', 'editor', temp_upload_file.name)
+            new_full_path = os.path.join(settings.MEDIA_ROOT, new_relative_path)
+
+            # 디렉터리 생성
+            os.makedirs(os.path.dirname(new_full_path), exist_ok=True)
+
+            # 파일 이동
+            shutil.move(temp_file_path, new_full_path)
+
+            # 파일 경로 갱신 (name은 DB에 저장되는 상대 경로임)
+            temp_upload_file.file.name = new_relative_path
+            temp_upload_file.save()
+        else:
+            return False
+
+    return True

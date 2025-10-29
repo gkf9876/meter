@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from django.utils import timezone
 
+from common.views import move_temp_images_to_uploads
 from common.models import File
 from .forms import MissionForm, MissionDetailForm
 from .models import Mission, MissionDetail
@@ -50,6 +51,10 @@ def create(request):
                 messages.error(request, '첨부파일의 총용량이 %dMB를 초과할 수 없습니다.' % (settings.FILE_UPLOAD_MAX_MEMORY_SIZE/ 1024 / 1024))
                 context = {'form': form}
                 return render(request, 'mission/form.html', context)
+            if not move_temp_images_to_uploads(request.POST.get('content', '')):
+                messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
+                context = {'form': form}
+                return render(request, 'mission/form.html', context)
             mission = form.save(commit=False)
             mission.author = request.user
             mission.create_date = timezone.now()
@@ -79,10 +84,12 @@ def modify(request, mission_id):
             delete_file_id_list = request.POST.getlist('delete_attached_file')
             total_files_size = sum([file.size for file in files])
             total_files_size += sum([file.file.size for file in mission.file.all() if str(file.id) not in delete_file_id_list])
-            print(mission.file.all())
-            print(delete_file_id_list)
             if total_files_size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
                 messages.error(request, '첨부파일의 총용량이 %dMB를 초과할 수 없습니다.' % (settings.FILE_UPLOAD_MAX_MEMORY_SIZE/ 1024 / 1024))
+                context = {'form': form}
+                return render(request, 'mission/form.html', context)
+            if not move_temp_images_to_uploads(request.POST.get('content', '')):
+                messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
                 context = {'form': form}
                 return render(request, 'mission/form.html', context)
             mission = form.save(commit=False)
@@ -127,6 +134,10 @@ def detail_create(request, mission_id):
     if request.method == "POST":
         form = MissionDetailForm(request.POST)
         if form.is_valid():
+            if not move_temp_images_to_uploads(request.POST.get('content', '')):
+                messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
+                context = {'mission': mission, 'form': form}
+                return render(request, 'mission/detail.html', context)
             missiondetail = form.save(commit=False)
             missiondetail.author = request.user
             missiondetail.create_date = timezone.now()
@@ -148,6 +159,10 @@ def detail_modify(request, missiondetail_id):
     if request.method == "POST":
         form = MissionDetailForm(request.POST, instance=missiondetail)
         if form.is_valid():
+            if not move_temp_images_to_uploads(request.POST.get('content', '')):
+                messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
+                context = {'missiondetail':missiondetail, 'form': form}
+                return render(request, 'mission/detail_form.html', context)
             missiondetail = form.save(commit=False)
             missiondetail.update_date = timezone.now()
             missiondetail.save()
