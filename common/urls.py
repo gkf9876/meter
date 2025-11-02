@@ -12,5 +12,5 @@ urlpatterns = [
     path('signup/', views.signup, name='signup'),
     path('download/<int:file_id>/', views.download_file, name='download_file'),
     path('temp_upload_image/', views.temp_upload_image, name='temp_upload_image'),
-    path('serve_image/<int:file_id>/', views.serve_image, name='serve_image'),
+    path('serve_image/<int:file_id>', views.serve_image, name='serve_image'),
 ]
