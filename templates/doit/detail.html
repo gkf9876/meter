@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load doit_filter %}
+{% block content %}
+<div class="container my-3">
+    <!-- message 표시 -->
+    {% if messages %}
+    <div class="alert alert-danger my-3" role="alert">
+        {% for message in messages %}
+            <strong>{{ message.tags }}</strong>
+            <ul><li>{{ message.message }}</li></ul>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <!-- 미션 -->
+    <h2 class="border-bottom py-2">{{ doit.subject }}</h2>
+    <div class="card my-3">
+        <div class="card-body">
+            <div class="card-text">{{ doit.content|safe }}</div>
+            <div class="d-flex justify-content-end">
+                {% if doit.update_date %}
+                <div class="badge bg-light text-dark p-2 text-start mx-3">
+                    <div class="mb-2">modified at</div>
+                    <div>{{ doit.update_date }}</div>
+                </div>
+                {% endif %}
+                <div class="badge bg-light text-dark p-2 text-start">
+                    <div class="mb-2">{{ doit.author.username }}</div>
+                    <div>{{ doit.create_date }}</div>
+                </div>
+            </div>
+            <div class="my-3">
+                {% if doit.file.count > 0 %}
+                <ul class="list-group">
+                    {% for file in doit.file.all %}
+                        <li class="list-group-item">
+                            <a href="{% url 'common:download_file' file.id %}" class="text-decoration-none">
+                                <img src="{% static 'bootstrap/icon/download.svg' %}" alt="Download SVG">
+                            </a>
+                            {{ file.name }}
+                            <span class="text-danger small mx-2">{{ file.file.size|div:1024|div:1024|floatformat:2 }}MB</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            <div class="my-3">
+                <a href="javascript:void(0)" data-uri="{% url 'doit:vote' doit.id %}" class="recommend btn btn-sm btn-outline-secondary">
+                    추천
+                    <span class="badge rounded-pill bg-success">{{ doit.voter.count }}</span>
+                </a>
+                {% if request.user == doit.author %}
+                <a href="{% url 'doit:modify' doit.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
+                <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'doit:delete' doit.id %}">삭제</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!-- 실천내용 -->
+    <h5 class="border-bottom my-3 py-2">{{ doit.doitdetail_set|filter_useYn:'Y'|length }}개의 실천이 있습니다.</h5>
+    {% for doitdetail in doit.doitdetail_set|filter_useYn:'Y' %}
+    <a id="doitdetail_{{ doitdetail.id }}"></a>
+    <div class="card my-3">
+        <div class="card-body">
+            <div class="card-text">{{ doitdetail.content|safe }}</div>
+            <div class="d-flex justify-content-end">
+                {% if doitdetail.update_date %}
+                <div class="badge bg-light text-dark p-2 text-start mx-3">
+                    <div class="mb-2">modified at</div>
+                    <div>{{ doitdetail.update_date }}</div>
+                </div>
+                {% endif %}
+                <div class="badge bg-light text-dark p-2 text-start">
+                    <div class="mb-2">{{ doitdetail.author.username }}</div>
+                    <div>{{ doitdetail.create_date }}</div>
+                </div>
+            </div>
+            <div class="my-3">
+                <a href="javascript:void(0)" data-uri="{% url 'doit:detail_vote' doitdetail.id %}" class="recommend btn btn-sm btn-outline-secondary">
+                    추천
+                    <span class="badge rounded-pill bg-success">{{ doitdetail.voter.count }}</span>
+                </a>
+                {% if request.user == doitdetail.author %}
+                <a href="{% url 'doit:detail_modify' doitdetail.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
+                <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'doit:detail_delete' doitdetail.id %}">삭제</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <form action="{% url 'doit:detail_create' doit.id %}" method="post" class="my-3">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+        <div class="mb-3">
+            <label for="content" class="form-label">실천내용</label>
+            <textarea {% if not user.is_authenticated %}disabled{% endif %} name="content" id="content" class="form-control" rows="10"></textarea>
+        </div>
+        <input type="submit" value="실천등록" class="btn btn-primary">
+    </form>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    tinymce.init({
+        license_key: 'gpl',
+        selector:'#content',
+        height: '500px',
+        menubar: false,
+        statusbar: false,
+        paste_data_images: true,
+        plugins: 'image link code lists',
+        toolbar1: 'formatselect | bold italic strikethrough forecolor backcolor| fontsizeselect | link | alignleft aligncenter alignright alignjustify | numlist bullist table outdent indent | image',
+        images_upload_url: '/common/temp_upload_image/',  // Django의 이미지 업로드 API URL
+        convert_urls: false,
+        automatic_uploads: true,
+    });
+
+    const delete_elements = document.getElementsByClassName("delete");
+    Array.from(delete_elements).forEach(function(element){
+        element.addEventListener('click', function(){
+            if(confirm("정말로 삭제하시겠습니까?")){
+                location.href = this.dataset.uri;
+            }
+        });
+    });
+
+    const recommend_elements = document.getElementsByClassName("recommend");
+    Array.from(recommend_elements).forEach(function(element){
+        element.addEventListener('click', function(){
+            if(confirm("정말로 추천하시겠습니까?")){
+                location.href = this.dataset.uri
+            }
+        });
+    });
+</script>
+{% endblock %}

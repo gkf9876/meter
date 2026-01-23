@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- 답변 수정 -->
+<div class="container my-3">
+    <form method="post">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+        <div class="mb-3">
+            <label for="content" class="form-label">실천내용</label>
+            <textarea class="form-control" name="content" id="content" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">저장하기</button>
+    </form>
+</div>
+{% endblock %}
+{% block script %}
+    <script>
+        tinymce.init({
+            license_key: 'gpl',
+            selector:'#content',
+            height: '500px',
+            menubar: false,
+            statusbar: false,
+            paste_data_images: true,
+            plugins: 'image link code lists',
+            toolbar1: 'formatselect | bold italic strikethrough forecolor backcolor| fontsizeselect | link | alignleft aligncenter alignright alignjustify | numlist bullist table outdent indent | image',
+            images_upload_url: '/common/temp_upload_image/',  // Django의 이미지 업로드 API URL
+            convert_urls: false,
+            automatic_uploads: true,
+        });
+    </script>
+{% endblock %}
