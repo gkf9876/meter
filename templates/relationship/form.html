@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load relationship_filter %}
+{% block content %}
+<div class="container">
+    <h5 class="my-3 border-bottom pb-2">실천등록</h5>
+    <!-- message 표시 -->
+    {% if messages %}
+    <div class="alert alert-danger my-3" role="alert">
+        {% for message in messages %}
+            <strong>{{ message.tags }}</strong>
+            <ul><li>{{ message.message }}</li></ul>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+        <div class="mb-3">
+            <label for="subject" class="form-label">제목</label>
+            <input type="text" class="form-control" name="subject" id="subject" value="{{ form.subject.value|default_if_none:'' }}">
+        </div>
+        {% if request.user.is_staff %}
+        <div class="mb-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="notice_yn" id="notice_yn" {% if form.notice_yn.value %}checked{% endif %}>
+                <label class="form-check-label" for="notice_yn">공지여부</label>
+            </div>
+        </div>
+        {% endif %}
+        <div class="mb-3">
+            <label for="content" class="form-label">내용</label>
+            <textarea class="form-control" name="content" id="content" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
+        </div>
+        <div class="mb-3">
+            {% if form.instance.file.count > 0 %}
+            <ul class="list-group">
+                {% for file in form.instance.file.all %}
+                <li class="list-group-item">
+                    <a href="javascript:void(0)" class="deleteFile text-decoration-none">
+                        <img src="{% static 'bootstrap/icon/dash-circle.svg' %}" alt="Download SVG">
+                    </a>
+                    <a href="{% url 'common:download_file' file.id %}" class="text-decoration-none">
+                        <img src="{% static 'bootstrap/icon/download.svg' %}" alt="Download SVG">
+                    </a>
+                    {{ file.name }}
+                    <span class="text-danger small mx-2">{{ file.file.size|div:1024|div:1024 }}MB</span>
+                    <input type="hidden" id="attached_file_{{ forloop.counter }}" name="attached_file" value="{{ file.id }}"/>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            <input type="file" class="form-control" name="file"  id="file" multiple>
+        </div>
+        <button type="submit" class="btn btn-primary">저장하기</button>
+    </form>
+</div>
+{% endblock %}
+{% block script %}
+    <script>
+        tinymce.init({
+            license_key: 'gpl',
+            selector:'#content',
+            height: '500px',
+            menubar: false,
+            statusbar: false,
+            paste_data_images: true,
+            plugins: 'image link code lists',
+            toolbar1: 'formatselect | bold italic strikethrough forecolor backcolor| fontsizeselect | link | alignleft aligncenter alignright alignjustify | numlist bullist table outdent indent | image',
+            images_upload_url: '/common/temp_upload_image/',  // Django의 이미지 업로드 API URL
+            convert_urls: false,
+            automatic_uploads: true,
+        });
+
+        const deleteFile_elements = document.getElementsByClassName("deleteFile");
+        Array.from(deleteFile_elements).forEach(function(element){
+            element.addEventListener('click', function(){
+                var listItem = this.parentElement;
+                if (listItem.classList.contains('delete')) {
+                    element.querySelector('img').src = "{% static 'bootstrap/icon/dash-circle.svg' %}";
+                    listItem.classList.remove('delete');
+                    var hiddenInput = listItem.querySelector('[name="delete_attached_file"]');
+                    if (hiddenInput) {
+                        hiddenInput.setAttribute('name', 'attached_file');
+                    }
+                }else{
+                    element.querySelector('img').src = "{% static 'bootstrap/icon/x-circle.svg' %}";
+                    listItem.classList.add('delete');
+                    var hiddenInput = listItem.querySelector('[name="attached_file"]');
+                    if (hiddenInput) {
+                        hiddenInput.setAttribute('name', 'delete_attached_file');
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

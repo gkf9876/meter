@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load relationship_filter %}
+{% block content %}
+<div class="container my-3">
+    <!-- message 표시 -->
+    {% if messages %}
+    <div class="alert alert-danger my-3" role="alert">
+        {% for message in messages %}
+            <strong>{{ message.tags }}</strong>
+            <ul><li>{{ message.message }}</li></ul>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <!-- 미션 -->
+    <h2 class="border-bottom py-2">{{ relationship.subject }}</h2>
+    <div class="card my-3">
+        <div class="card-body">
+            <div class="card-text">{{ relationship.content|safe }}</div>
+            <div class="d-flex justify-content-end">
+                {% if relationship.update_date %}
+                <div class="badge bg-light text-dark p-2 text-start mx-3">
+                    <div class="mb-2">modified at</div>
+                    <div>{{ relationship.update_date }}</div>
+                </div>
+                {% endif %}
+                <div class="badge bg-light text-dark p-2 text-start">
+                    <div class="mb-2">{{ relationship.author.username }}</div>
+                    <div>{{ relationship.create_date }}</div>
+                </div>
+            </div>
+            <div class="my-3">
+                {% if relationship.file.count > 0 %}
+                <ul class="list-group">
+                    {% for file in relationship.file.all %}
+                        <li class="list-group-item">
+                            <a href="{% url 'common:download_file' file.id %}" class="text-decoration-none">
+                                <img src="{% static 'bootstrap/icon/download.svg' %}" alt="Download SVG">
+                            </a>
+                            {{ file.name }}
+                            <span class="text-danger small mx-2">{{ file.file.size|div:1024|div:1024|floatformat:2 }}MB</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            <div class="my-3">
+                <a href="javascript:void(0)" data-uri="{% url 'relationship:vote' relationship.id %}" class="recommend btn btn-sm btn-outline-secondary">
+                    추천
+                    <span class="badge rounded-pill bg-success">{{ relationship.voter.count }}</span>
+                </a>
+                {% if request.user == relationship.author %}
+                <a href="{% url 'relationship:modify' relationship.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
+                <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'relationship:delete' relationship.id %}">삭제</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!-- 실천내용 -->
+    <h5 class="border-bottom my-3 py-2">{{ relationship.relationshipdetail_set|filter_useYn:'Y'|length }}개의 실천이 있습니다.</h5>
+    {% for relationshipdetail in relationship.relationshipdetail_set|filter_useYn:'Y' %}
+    <a id="relationshipdetail_{{ relationshipdetail.id }}"></a>
+    <div class="card my-3">
+        <div class="card-body">
+            <div class="card-text">{{ relationshipdetail.content|safe }}</div>
+            <div class="d-flex justify-content-end">
+                {% if relationshipdetail.update_date %}
+                <div class="badge bg-light text-dark p-2 text-start mx-3">
+                    <div class="mb-2">modified at</div>
+                    <div>{{ relationshipdetail.update_date }}</div>
+                </div>
+                {% endif %}
+                <div class="badge bg-light text-dark p-2 text-start">
+                    <div class="mb-2">{{ relationshipdetail.author.username }}</div>
+                    <div>{{ relationshipdetail.create_date }}</div>
+                </div>
+            </div>
+            <div class="my-3">
+                <a href="javascript:void(0)" data-uri="{% url 'relationship:detail_vote' relationshipdetail.id %}" class="recommend btn btn-sm btn-outline-secondary">
+                    추천
+                    <span class="badge rounded-pill bg-success">{{ relationshipdetail.voter.count }}</span>
+                </a>
+                {% if request.user == relationshipdetail.author %}
+                <a href="{% url 'relationship:detail_modify' relationshipdetail.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
+                <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'relationship:detail_delete' relationshipdetail.id %}">삭제</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <form action="{% url 'relationship:detail_create' relationship.id %}" method="post" class="my-3">
+        {% csrf_token %}
+        {% include "form_errors.html" %}
+        <div class="mb-3">
+            <label for="content" class="form-label">실천내용</label>
+            <textarea {% if not user.is_authenticated %}disabled{% endif %} name="content" id="content" class="form-control" rows="10"></textarea>
+        </div>
+        <input type="submit" value="실천등록" class="btn btn-primary">
+    </form>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    tinymce.init({
+        license_key: 'gpl',
+        selector:'#content',
+        height: '500px',
+        menubar: false,
+        statusbar: false,
+        paste_data_images: true,
+        plugins: 'image link code lists',
+        toolbar1: 'formatselect | bold italic strikethrough forecolor backcolor| fontsizeselect | link | alignleft aligncenter alignright alignjustify | numlist bullist table outdent indent | image',
+        images_upload_url: '/common/temp_upload_image/',  // Django의 이미지 업로드 API URL
+        convert_urls: false,
+        automatic_uploads: true,
+    });
+
+    const delete_elements = document.getElementsByClassName("delete");
+    Array.from(delete_elements).forEach(function(element){
+        element.addEventListener('click', function(){
+            if(confirm("정말로 삭제하시겠습니까?")){
+                location.href = this.dataset.uri;
+            }
+        });
+    });
+
+    const recommend_elements = document.getElementsByClassName("recommend");
+    Array.from(recommend_elements).forEach(function(element){
+        element.addEventListener('click', function(){
+            if(confirm("정말로 추천하시겠습니까?")){
+                location.href = this.dataset.uri
+            }
+        });
+    });
+</script>
+{% endblock %}

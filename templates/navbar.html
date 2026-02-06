@@ -30,6 +30,9 @@
                         <li><a class="dropdown-item" href="{% url 'mission:index' %}">리액트 + 스프링부트</a></li>
                         <li><a class="dropdown-item" href="{% url 'habit:index' %}">성공하는 사람들의 7가지 습관</a></li>
                         <li><a class="dropdown-item" href="{% url 'doit:index' %}">그대, 스스로를 고용하라</a></li>
+                        {% if perms.relationship.view_relationship %}
+                            <li><a class="dropdown-item" href="{% url 'relationship:index' %}">인간관계</a></li>
+                        {% endif %}
                     </ul>
                 </li>
                 <li class="nav-item dropdown">

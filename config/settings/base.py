@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'tinymce',
     'common.apps.CommonConfig',
     'mptt',
+    'relationship.apps.RelationshipConfig',
     'doit.apps.DoitConfig',
     'memorization.apps.MemorizationConfig',
     'info.apps.InfoConfig',
