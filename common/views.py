@@ -32,6 +32,9 @@ def signup(request):
 def page_not_found(request, exception):
     return render(request, 'common/404.html', {})
 
+def equest_entity_too_large(request, exception):
+    return render(request, 'common/413.html', {})
+
 @login_required(login_url='common:login')
 def download_file(request, file_id):
     file = get_object_or_404(File, pk=file_id)

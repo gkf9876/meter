@@ -1,0 +1,10 @@
+[project]
+name = "meter"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.14"
+dependencies = [
+    "django>=6.0.3",
+    "django-mptt>=0.18.0",
+    "django-tinymce>=5.0.0",
+]
