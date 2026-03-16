@@ -39,4 +39,4 @@ urlpatterns = [
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler404 = 'common.views.page_not_found'
-handler413 = 'common.views.equest_entity_too_large'
+handler413 = 'common.views.request_entity_too_large'

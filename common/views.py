@@ -32,7 +32,7 @@ def signup(request):
 def page_not_found(request, exception):
     return render(request, 'common/404.html', {})
 
-def equest_entity_too_large(request, exception):
+def request_entity_too_large(request, exception):
     return render(request, 'common/413.html', {})
 
 @login_required(login_url='common:login')
