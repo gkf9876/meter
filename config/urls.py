@@ -24,6 +24,7 @@ from info import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('health/', include('health.urls')),
     path('relationship/', include('relationship.urls')),
     path('doit/', include('doit.urls')),
     path('memorization/', include('memorization.urls')),
