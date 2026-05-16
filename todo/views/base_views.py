@@ -12,7 +12,7 @@ logger = logging.getLogger('todo')
 def index(request):
     logger.info("INFO 레벨로 출력")
     check_yn = request.GET.get('check_yn', '')
-    todo_tree = Todo.objects.filter(author_id=request.user.id, use_yn='Y').order_by('-create_date', 'subject')
+    todo_tree = Todo.objects.filter(author_id=request.user.id, use_yn='Y')
     if check_yn:
         todo_tree = todo_tree.filter(check_yn=check_yn)
     context = {'todo_tree': todo_tree, 'check_yn':check_yn}

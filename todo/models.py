@@ -19,7 +19,7 @@ class Todo(MPTTModel):
         ordering = ['tree_id', 'lft']
 
     class MPTTMeta:
-        order_insertion_by = ['subject']
+        order_insertion_by = ['-create_date', 'subject']
 
     def __str__(self):
         return self.subject
