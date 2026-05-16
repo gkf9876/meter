@@ -1,4 +1,6 @@
 from django import template
+from django.utils import timezone
+from datetime import timedelta
 
 register = template.Library()
 
@@ -13,3 +15,9 @@ def filter_useYn(list, use_yn):
 @register.filter
 def div(value, arg):
     return value / arg
+
+@register.filter
+def is_new(value):
+    if not value:
+        return False
+    return value >= timezone.now() - timedelta(days=5)

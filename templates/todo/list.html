@@ -44,6 +44,9 @@
                                     {% if node.tododetail_set|filter_useYn:'Y'|length > 0 %}
                                         <span class="text-danger small mx-2">{{ node.tododetail_set|filter_useYn:'Y'|length }}</span>
                                     {% endif %}
+                                    {% if node.create_date|is_new %}
+                                        <span class="text-danger small mx-2">new</span>
+                                    {% endif %}
                                 </div>
                             </td>
                             <td>
@@ -73,6 +76,9 @@
                                     </a>
                                     {% if node.tododetail_set|filter_useYn:'Y'|length > 0 %}
                                         <span class="text-danger small mx-2">{{ node.tododetail_set|filter_useYn:'Y'|length }}</span>
+                                    {% endif %}
+                                    {% if node.create_date|is_new %}
+                                        <span class="text-danger small mx-2">new</span>
                                     {% endif %}
                                 </div>
                             </td>
