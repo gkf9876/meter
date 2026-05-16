@@ -15,7 +15,6 @@ from .models import Health, HealthDetail
 
 
 @login_required(login_url='common:login')
-@permission_required('health.view_health', raise_exception=False)
 def index(request):
     page = request.GET.get('page', '1')
     kw = request.GET.get('kw', '')
@@ -34,7 +33,6 @@ def index(request):
     return render(request, 'health/list.html', context)
 
 @login_required(login_url='common:login')
-@permission_required('health.view_health', raise_exception=False)
 def detail(request, health_id):
     health = get_object_or_404(Health, Q(author_id=request.user.id) | Q(notice_yn=True), pk=health_id, use_yn='Y')
     if request.user != health.author:
@@ -43,7 +41,6 @@ def detail(request, health_id):
     return render(request, 'health/detail.html', context)
 
 @login_required(login_url='common:login')
-@permission_required('health.add_health', raise_exception=False)
 def create(request):
     if request.method == 'POST':
         form = HealthForm(request.POST)
@@ -75,7 +72,6 @@ def create(request):
     return render(request, 'health/form.html', context)
 
 @login_required(login_url='common:login')
-@permission_required('health.change_health', raise_exception=False)
 def modify(request, health_id):
     health = get_object_or_404(Health, pk=health_id)
     if request.user != health.author:
@@ -120,7 +116,6 @@ def modify(request, health_id):
     return render(request, 'health/form.html', context)
 
 @login_required(login_url='common:login')
-@permission_required('health.delete_health', raise_exception=False)
 def delete(request, health_id):
     health = get_object_or_404(Health, pk=health_id)
     if request.user != health.author:
@@ -132,7 +127,6 @@ def delete(request, health_id):
     return redirect('health:index')
 
 @login_required(login_url='common:login')
-@permission_required('health.add_healthdetail', raise_exception=False)
 def detail_create(request, health_id):
     """
     실천내용 등록
@@ -158,7 +152,6 @@ def detail_create(request, health_id):
 
 
 @login_required(login_url='common:login')
-@permission_required('health.change_healthdetail', raise_exception=False)
 def detail_modify(request, healthdetail_id):
     healthdetail = get_object_or_404(HealthDetail, pk=healthdetail_id)
     healthdetail_content = healthdetail.content
@@ -183,7 +176,6 @@ def detail_modify(request, healthdetail_id):
     return render(request, 'health/detail_form.html', context)
 
 @login_required(login_url='common:login')
-@permission_required('health.delete_healthdetail', raise_exception=False)
 def detail_delete(request, healthdetail_id):
     healthdetail = get_object_or_404(HealthDetail, pk=healthdetail_id)
     if request.user != healthdetail.author:
@@ -195,7 +187,6 @@ def detail_delete(request, healthdetail_id):
     return redirect('health:detail', health_id=healthdetail.health.id)
 
 @login_required(login_url='common:login')
-@permission_required('health.view_health', raise_exception=False)
 def vote(request, health_id):
     health = get_object_or_404(Health, pk=health_id)
     if request.user == health.author:
@@ -205,7 +196,6 @@ def vote(request, health_id):
     return redirect('health:detail', health_id=health.id)
 
 @login_required(login_url='common:login')
-@permission_required('health.view_healthdetail', raise_exception=False)
 def detail_vote(request, healthdetail_id):
     healthdetail = get_object_or_404(HealthDetail, pk=healthdetail_id)
     if request.user == healthdetail.author:
