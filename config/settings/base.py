@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'tinymce',
     'common.apps.CommonConfig',
     'mptt',
+    'thirdHabit.apps.ThirdHabitConfig',
     'accounts.apps.AccountsConfig',
     'diary.apps.DiaryConfig',
     'community.apps.CommunityConfig',

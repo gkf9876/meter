@@ -24,6 +24,7 @@ from info import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('thirdHabit/', include('thirdHabit.urls')),
     path('diary/', include('diary.urls')),
     path('community/', include('community.urls')),
     path('health/', include('health.urls')),

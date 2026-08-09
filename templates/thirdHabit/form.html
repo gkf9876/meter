@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load habit_filter %}
+{% load thirdHabit_filter %}
 {% block content %}
 <div class="container">
     <ul class="nav nav-tabs">
         <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'habit:index' %}">게시판</a>
+            <a class="nav-link" href="{% url 'habit:index' %}">게시판</a>
         </li>
         <li class="nav-item">
             <a class="nav-link disabled" aria-disabled="true" href="#">습관 1</a>
@@ -14,7 +14,7 @@
             <a class="nav-link disabled" aria-disabled="true" href="#">습관 2</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{% url 'thirdHabit:index' %}">습관 3</a>
+            <a class="nav-link active" aria-current="page" href="{% url 'thirdHabit:index' %}">습관 3</a>
         </li>
         <li class="nav-item">
             <a class="nav-link disabled" aria-disabled="true" href="#">습관 4</a>
@@ -42,6 +42,7 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {% include "form_errors.html" %}
+        {% include "formset_errors.html" %}
         <div class="mb-3">
             <label for="subject" class="form-label">제목</label>
             <input type="text" class="form-control" name="subject" id="subject" value="{{ form.subject.value|default_if_none:'' }}">
@@ -54,6 +55,29 @@
             </div>
         </div>
         {% endif %}
+        <div class="mb-3">
+            {{ formset.management_form }}
+            <div id="form-container">
+                <ul class="list-group mb-3">
+                    {% for form in formset %}
+                        <li class="list-group-item" style="display: flex;">
+                            <input type="hidden" id="{{ form.id.id_for_label }}" name="{{ form.id.html_name }}" value="{{ form.id.value|default_if_none:'' }}">
+                            <input type="hidden" id="id_form-{{ forloop.counter0 }}-use_yn" name="form-{{ forloop.counter0 }}-use_yn" value="Y">
+                            <input type="text" id="id_form-{{ forloop.counter0 }}-content" name="form-{{ forloop.counter0 }}-content" class="form-control" placeholder="예: 개인" style="flex: 1;"  value="{{ form.content.value|default_if_none:'' }}">
+                            <button type="button" id="form-{{ forloop.counter0 }}-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
+                        </li>
+                    {% endfor %}
+                    <!-- 숨겨진 empty_form (템플릿용) -->
+                    <li id="empty-form" class="list-group-item" style="display:none;">
+                        <input type="hidden" id="{{ formset.empty_form.id.id_for_label }}" name="{{ formset.empty_form.id.html_name }}" value="">
+                        <input type="hidden" id="id_form-__prefix__-use_yn" name="form-__prefix__-use_yn" value="Y">
+                        <input type="text" id="id_form-__prefix__-content" name="form-__prefix__-content" class="form-control" placeholder="예: 개인">
+                        <button type="button" id="form-__prefix__-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
+                    </li>
+                </ul>
+            </div>
+            <button type="button" class="btn btn-secondary mb-3" id="addItem">+ 일정 추가</button>
+        </div>
         <div class="mb-3">
             <label for="content" class="form-label">내용</label>
             <textarea class="form-control" name="content" id="content" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
@@ -116,6 +140,47 @@
                     if (hiddenInput) {
                         hiddenInput.setAttribute('name', 'delete_attached_file');
                     }
+                }
+            });
+        });
+
+        const formContainer = document.querySelector("#form-container ul");
+        const addItemBtn = document.getElementById("addItem");
+        const totalForms = document.getElementById("id_form-TOTAL_FORMS");
+
+        addItemBtn.addEventListener("click", function() {
+            let formNum = parseInt(totalForms.value);
+            let emptyForm = document.getElementById("empty-form");
+            const newRow = emptyForm.cloneNode(true); // li 전체 복제
+            newRow.removeAttribute("id");             // id 속성 제거
+            let newForm = newRow.outerHTML.replace(/__prefix__/g, formNum);
+
+            // 새로운 행 DOM으로 삽입
+            const temp = document.createElement("ul");
+            temp.innerHTML = newForm;
+            const newLiRow = temp.querySelector("li");
+            newLiRow.style.display = "flex"; // 보이게
+
+            formContainer.insertBefore(newLiRow, emptyForm);
+
+            // 총 폼 개수 증가
+            totalForms.value = formNum + 1;
+        });
+
+        const deleteItem_elements = document.getElementsByClassName("deleteItem");
+        Array.from(deleteItem_elements).forEach(function(element){
+            element.addEventListener('click', function(){
+                const row = this.closest("li");
+                const useYn = row.querySelector(`input[name$="-use_yn"]`);
+
+                if (row.classList.contains("list-group-item-danger")) {
+                    // 삭제 해제
+                    useYn.value = "Y";
+                    row.classList.remove("list-group-item-danger");
+                } else {
+                    // 삭제 처리
+                    useYn.value = "N";
+                    row.classList.add("list-group-item-danger");
                 }
             });
         });

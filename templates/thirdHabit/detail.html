@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load habit_filter %}
+{% load thirdHabit_filter %}
 {% block content %}
 <div class="container my-3">
     <ul class="nav nav-tabs">
         <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'habit:index' %}">게시판</a>
+            <a class="nav-link" href="{% url 'habit:index' %}">게시판</a>
         </li>
         <li class="nav-item">
             <a class="nav-link disabled" aria-disabled="true" href="#">습관 1</a>
@@ -14,7 +14,7 @@
             <a class="nav-link disabled" aria-disabled="true" href="#">습관 2</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{% url 'thirdHabit:index' %}">습관 3</a>
+            <a class="nav-link active" aria-current="page" href="{% url 'thirdHabit:index' %}">습관 3</a>
         </li>
         <li class="nav-item">
             <a class="nav-link disabled" aria-disabled="true" href="#">습관 4</a>
@@ -39,26 +39,36 @@
     </div>
     {% endif %}
     <!-- 미션 -->
-    <h2 class="border-bottom py-2">{{ habit.subject }}</h2>
+    <h2 class="border-bottom py-2">{{ thirdHabit.subject }}</h2>
     <div class="card my-3">
         <div class="card-body">
-            <div class="card-text">{{ habit.content|safe }}</div>
+            <div class="mb-3">
+                {{ formset.management_form }}
+                <div id="form-container">
+                    <ul class="list-group mb-3">
+                        {% for form in formset %}
+                            <li class="list-group-item">{{ form.content.value|default_if_none:'' }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="card-text">{{ thirdHabit.content|safe }}</div>
             <div class="d-flex justify-content-end">
-                {% if habit.update_date %}
+                {% if thirdHabit.update_date %}
                 <div class="badge bg-light text-dark p-2 text-start mx-3">
                     <div class="mb-2">modified at</div>
-                    <div>{{ habit.update_date }}</div>
+                    <div>{{ thirdHabit.update_date }}</div>
                 </div>
                 {% endif %}
                 <div class="badge bg-light text-dark p-2 text-start">
-                    <div class="mb-2">{{ habit.author.username }}</div>
-                    <div>{{ habit.create_date }}</div>
+                    <div class="mb-2">{{ thirdHabit.author.username }}</div>
+                    <div>{{ thirdHabit.create_date }}</div>
                 </div>
             </div>
             <div class="my-3">
-                {% if habit.file.count > 0 %}
+                {% if thirdHabit.file.count > 0 %}
                 <ul class="list-group">
-                    {% for file in habit.file.all %}
+                    {% for file in thirdHabit.file.all %}
                         <li class="list-group-item">
                             <a href="{% url 'common:download_file' file.id %}" class="text-decoration-none">
                                 <img src="{% static 'bootstrap/icon/download.svg' %}" alt="Download SVG">
@@ -71,50 +81,50 @@
                 {% endif %}
             </div>
             <div class="my-3">
-                <a href="javascript:void(0)" data-uri="{% url 'habit:vote' habit.id %}" class="recommend btn btn-sm btn-outline-secondary">
+                <a href="javascript:void(0)" data-uri="{% url 'thirdHabit:vote' thirdHabit.id %}" class="recommend btn btn-sm btn-outline-secondary">
                     추천
-                    <span class="badge rounded-pill bg-success">{{ habit.voter.count }}</span>
+                    <span class="badge rounded-pill bg-success">{{ thirdHabit.voter.count }}</span>
                 </a>
-                {% if request.user == habit.author %}
-                <a href="{% url 'habit:modify' habit.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
-                <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'habit:delete' habit.id %}">삭제</a>
+                {% if request.user == thirdHabit.author %}
+                <a href="{% url 'thirdHabit:modify' thirdHabit.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
+                <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'thirdHabit:delete' thirdHabit.id %}">삭제</a>
                 {% endif %}
             </div>
         </div>
     </div>
     <!-- 실천내용 -->
-    <h5 class="border-bottom my-3 py-2">{{ habit.habitdetail_set|filter_useYn:'Y'|length }}개의 실천이 있습니다.</h5>
-    {% for habitdetail in habit.habitdetail_set|filter_useYn:'Y' %}
-    <a id="habitdetail_{{ habitdetail.id }}"></a>
+    <h5 class="border-bottom my-3 py-2">{{ thirdHabit.thirdhabitdetail_set|filter_useYn:'Y'|length }}개의 실천이 있습니다.</h5>
+    {% for thirdhabitdetail in thirdHabit.thirdhabitdetail_set|filter_useYn:'Y' %}
+    <a id="thirdhabitdetail_{{ thirdhabitdetail.id }}"></a>
     <div class="card my-3">
         <div class="card-body">
-            <div class="card-text">{{ habitdetail.content|safe }}</div>
+            <div class="card-text">{{ thirdhabitdetail.content|safe }}</div>
             <div class="d-flex justify-content-end">
-                {% if habitdetail.update_date %}
+                {% if thirdhabitdetail.update_date %}
                 <div class="badge bg-light text-dark p-2 text-start mx-3">
                     <div class="mb-2">modified at</div>
-                    <div>{{ habitdetail.update_date }}</div>
+                    <div>{{ thirdhabitdetail.update_date }}</div>
                 </div>
                 {% endif %}
                 <div class="badge bg-light text-dark p-2 text-start">
-                    <div class="mb-2">{{ habitdetail.author.username }}</div>
-                    <div>{{ habitdetail.create_date }}</div>
+                    <div class="mb-2">{{ thirdhabitdetail.author.username }}</div>
+                    <div>{{ thirdhabitdetail.create_date }}</div>
                 </div>
             </div>
             <div class="my-3">
-                <a href="javascript:void(0)" data-uri="{% url 'habit:detail_vote' habitdetail.id %}" class="recommend btn btn-sm btn-outline-secondary">
+                <a href="javascript:void(0)" data-uri="{% url 'thirdHabit:detail_vote' thirdhabitdetail.id %}" class="recommend btn btn-sm btn-outline-secondary">
                     추천
-                    <span class="badge rounded-pill bg-success">{{ habitdetail.voter.count }}</span>
+                    <span class="badge rounded-pill bg-success">{{ thirdhabitdetail.voter.count }}</span>
                 </a>
-                {% if request.user == habitdetail.author %}
-                <a href="{% url 'habit:detail_modify' habitdetail.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
-                <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'habit:detail_delete' habitdetail.id %}">삭제</a>
+                {% if request.user == thirdhabitdetail.author %}
+                <a href="{% url 'thirdHabit:detail_modify' thirdhabitdetail.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
+                <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'thirdHabit:detail_delete' thirdhabitdetail.id %}">삭제</a>
                 {% endif %}
             </div>
         </div>
     </div>
     {% endfor %}
-    <form action="{% url 'habit:detail_create' habit.id %}" method="post" class="my-3">
+    <form action="{% url 'thirdHabit:detail_create' thirdHabit.id %}" method="post" class="my-3">
         {% csrf_token %}
         {% include "form_errors.html" %}
         <div class="mb-3">
