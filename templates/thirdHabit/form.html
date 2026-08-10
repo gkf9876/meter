@@ -92,7 +92,7 @@
                                 </div>
                             </div>
                             <div class="col">
-                                <div>
+                                <div id="form-container1-{{ forloop.counter0 }}">
                                     <ul class="list-group mb-3">
                                         {% with detail_formset=detail_formsets|get_item:item.id %}
                                             {{ detail_formset.management_form }}
@@ -101,25 +101,54 @@
                                                     <input type="hidden" id="{{ detail_form.id.id_for_label }}" name="{{ detail_form.id.html_name }}" value="{{ detail_form.id.value|default_if_none:'' }}">
                                                     <input type="hidden" id="{{ detail_form.use_yn.id_for_label }}" name="{{ detail_form.use_yn.html_name }}" value="Y">
                                                     <input type="text" id="{{ detail_form.content.id_for_label }}" name="{{ detail_form.content.html_name }}" class="form-control" placeholder="예: 개인" style="flex: 1;"  value="{{ detail_form.content.value|default_if_none:'' }}">
-                                                    <button type="button" id="form-{{ forloop.counter1 }}-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
+                                                    <button type="button" id="form-{{ forloop.counter0 }}-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
                                                 </li>
                                             {% endfor %}
                                             <!-- 숨겨진 empty_form (템플릿용) -->
-                                            <li id="empty-form1" class="list-group-item" style="display:none;">
+                                            <li id="empty-form-__prefix0__-detail-__prefix1__" class="list-group-item" style="display:none;">
                                                 <input type="hidden" id="{{ detail_formset.empty_form.id.id_for_label }}" name="{{ detail_formset.empty_form.id.html_name }}" value="">
-                                                <input type="hidden" id="id_item-__prefix0__-use_yn" name="item-__prefix0__-use_yn" value="Y">
-                                                <input type="text" id="id_item-__prefix0__-content" name="item-__prefix0__-content" class="form-control" placeholder="예: 개인">
-                                                <button type="button" id="id_item-__prefix0__-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
+                                                <input type="hidden" id="item-__prefix0__-detail-__prefix1__-use_yn" name="item-__prefix0__-detail-__prefix1__-use_yn" value="Y">
+                                                <input type="text" id="item-__prefix0__-detail-__prefix1__-content" name="item-__prefix0__-detail-__prefix1__-content" class="form-control" placeholder="예: 개인">
+                                                <button type="button" id="id_item-__prefix0__-detail-__prefix1__-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
                                             </li>
                                         {% endwith %}
                                     </ul>
                                 </div>
-                                <button type="button" class="btn btn-secondary mb-3" id="addItem1">+ 할일 추가</button>
+                                <button type="button" class="btn btn-secondary mb-3" id="addItem{{ forloop.counter0 }}">+ 할일 추가</button>
                             </div>
                         </div>
                     </div>
                     {% endwith %}
                 {% endfor %}
+                <div id="empty-form-detail" class="container text-center" style="display:none;">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <div class="card" style="width: 18rem;height: 10rem;">
+                                <div class="card-body">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div>
+                                <ul class="list-group mb-3">
+                                    <input type="hidden" name="item-__prefix0__-detail-TOTAL_FORMS" value="0" id="id_item-__prefix0__-detail-TOTAL_FORMS">
+                                    <input type="hidden" name="item-__prefix0__-detail-INITIAL_FORMS" value="0" id="id_item-__prefix0__-detail-INITIAL_FORMS">
+                                    <input type="hidden" name="item-__prefix0__-detail-MIN_NUM_FORMS" value="0" id="id_item-__prefix0__-detail-MIN_NUM_FORMS">
+                                    <input type="hidden" name="item-__prefix0__-detail-MAX_NUM_FORMS" value="1000" id="id_item-__prefix0__-detail-MAX_NUM_FORMS">
+
+                                    <!-- 숨겨진 empty_form (템플릿용) -->
+                                    <li id="empty-form__prefix0__" class="list-group-item" style="display:none;">
+                                        <input type="hidden" id="id_item-__prefix0__-detail-__prefix1__-id" name="item-__prefix0__-detail-__prefix1__-id" value="">
+                                        <input type="hidden" id="id_item-__prefix0__-detail-__prefix1__-use_yn" name="item-__prefix0__-detail-__prefix1__-use_yn" value="Y">
+                                        <input type="text" id="id_item-__prefix0__-detail-__prefix1__-content" name="item-__prefix0__-detail-__prefix1__-content" class="form-control" placeholder="예: 개인">
+                                        <button type="button" id="id_item-__prefix0__-detail-__prefix1__-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <button type="button" class="btn btn-secondary mb-3" id="addItem__prefix0__">+ 할일 추가</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="mb-3">
@@ -188,13 +217,15 @@
             });
         });
 
-        const formContainer = document.querySelector("#form-container0 ul");
-        const addItemBtn = document.getElementById("addItem");
-        const totalForms = document.getElementById("id_item-TOTAL_FORMS");
+        const formContainer0 = document.querySelector("#form-container0 ul");
+        const addItemBtn0 = document.getElementById("addItem");
+        const totalForms0 = document.getElementById("id_item-TOTAL_FORMS");
 
-        addItemBtn.addEventListener("click", function() {
-            let formNum = parseInt(totalForms.value);
-            let emptyForm = document.getElementById("empty-form");
+        const formContainer1 = document.querySelector("#form-container1");
+
+        addItemBtn0.addEventListener("click", function() {
+            let formNum = parseInt(totalForms0.value);
+            let emptyForm = document.getElementById("empty-form0");
             const newRow = emptyForm.cloneNode(true); // li 전체 복제
             newRow.removeAttribute("id");             // id 속성 제거
             let newForm = newRow.outerHTML.replace(/__prefix__/g, formNum);
@@ -209,10 +240,24 @@
                 event.currentTarget.closest("li").remove();
             });
 
-            formContainer.insertBefore(newLiRow, emptyForm);
+            formContainer0.insertBefore(newLiRow, emptyForm);
 
             // 총 폼 개수 증가
-            totalForms.value = formNum + 1;
+            totalForms0.value = formNum + 1;
+
+            // 할일 추가
+            let emptyFormDetail = document.getElementById("empty-form-detail");
+            const newDetailRow = emptyFormDetail.cloneNode(true); // li 전체 복제
+            newDetailRow.removeAttribute("id");             // id 속성 제거
+            let newDetailForm = newDetailRow.outerHTML.replace(/__prefix0__/g, formNum);
+
+            // 새로운 행 DOM으로 삽입
+            const tempDetail = document.createElement("div");
+            tempDetail.innerHTML = newDetailForm;
+            const newDivRow = tempDetail.querySelector("div");
+            newDivRow.style.display = ""; // 보이게
+
+            formContainer1.insertBefore(newDivRow, emptyFormDetail);
         });
 
         const deleteItem_elements = document.getElementsByClassName("deleteItem");
