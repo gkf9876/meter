@@ -11,8 +11,8 @@ from django.utils import timezone
 
 from common.models import File
 from common.views import move_temp_images_to_uploads, delete_unused_images
-from .forms import ThirdHabitForm, ThirdHabitItemForm, ThirdHabitDetailForm
-from .models import ThirdHabit, ThirdHabitItem, ThirdHabitDetail
+from .forms import ThirdHabitForm, ThirdHabitItemForm, ThirdHabitDetailForm, ThirdHabitItemDetailForm
+from .models import ThirdHabit, ThirdHabitItem, ThirdHabitDetail, ThirdHabitItemDetail
 
 
 @login_required(login_url='common:login')
@@ -85,15 +85,28 @@ def create(request):
 @login_required(login_url='common:login')
 def modify(request, thirdHabit_id):
     thirdHabit = get_object_or_404(ThirdHabit, pk=thirdHabit_id)
-    ThirdHabitFormSet = modelformset_factory(ThirdHabitItem, form=ThirdHabitItemForm, extra=0, can_delete=True)
+    ThirdHabitItemFormSet = modelformset_factory(ThirdHabitItem, form=ThirdHabitItemForm, extra=0, can_delete=True)
+    ThirdHabitItemDetailFormSet = modelformset_factory(ThirdHabitItemDetail, form=ThirdHabitItemDetailForm, extra=0, can_delete=True)
     thirdHabit_content = thirdHabit.content
     if request.user != thirdHabit.author:
         messages.error(request, '수정권한이 없습니다')
         return redirect('thirdHabit:detail', thirdHabit_id=thirdHabit.id)
     if request.method == "POST":
         form = ThirdHabitForm(request.POST, instance=thirdHabit)
-        formset = ThirdHabitFormSet(request.POST, queryset=thirdHabit.item.filter(use_yn='Y').order_by('create_date'))
-        if form.is_valid() and formset.is_valid():
+        formset = ThirdHabitItemFormSet(request.POST, prefix='item', queryset=thirdHabit.item.filter(use_yn='Y').order_by('create_date'))
+        detail_formsets = {}
+        detail_valid = True
+        for index, item_form in enumerate(formset):
+            item = item_form.instance
+            detail_formsets[item.id] = ThirdHabitItemDetailFormSet(
+                request.POST,
+                prefix=f'item-{index}-detail',
+                queryset=item.detailItem.filter(use_yn='Y').order_by('create_date')
+            )
+            if not detail_formsets[item.id].is_valid():
+                detail_valid = False
+                break
+        if form.is_valid() and formset.is_valid() and detail_valid:
             files = request.FILES.getlist('file')
             delete_file_id_list = request.POST.getlist('delete_attached_file')
             total_files_size = sum([file.size for file in files])
@@ -110,11 +123,16 @@ def modify(request, thirdHabit_id):
             thirdHabit = form.save(commit=False)
             thirdHabit.update_date = timezone.now()
             thirdHabit.save()
-            thirdHabit_items = formset.save(commit=False)
-            for item in thirdHabit_items:
+
+            for index, item_form in enumerate(formset):
+                item = item_form.instance
                 item.update_date = timezone.now()
                 item.save()
                 thirdHabit.item.add(item)
+                thirdHabit_detailItems = detail_formsets[item.id].save(commit=False)
+                for detail in thirdHabit_detailItems:
+                    detail.save()
+                    item.detailItem.add(detail)
             for file in files:
                 file_instance = File()
                 file_instance.name = file.name
@@ -131,8 +149,15 @@ def modify(request, thirdHabit_id):
             return redirect('thirdHabit:detail', thirdHabit_id=thirdHabit.id)
     else:
         form = ThirdHabitForm(instance=thirdHabit)
-        formset = ThirdHabitFormSet(queryset=thirdHabit.item.filter(use_yn='Y').order_by('create_date'))
-    context = {'form': form, 'formset': formset}
+        formset = ThirdHabitItemFormSet(prefix='item', queryset=thirdHabit.item.filter(use_yn='Y').order_by('create_date'))
+        detail_formsets = {}
+        for index, item_form in enumerate(formset):
+            item = item_form.instance
+            detail_formsets[item.id] = ThirdHabitItemDetailFormSet(
+                prefix=f'item-{index}-detail',
+                queryset=item.detailItem.filter(use_yn='Y').order_by('create_date')
+            )
+    context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets}
     return render(request, 'thirdHabit/form.html', context)
 
 @login_required(login_url='common:login')
