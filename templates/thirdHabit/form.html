@@ -83,10 +83,10 @@
                 {% for form in formset %}
                     {% with item=form.instance %}
                     {% with item_index=forloop.counter0 %}
-                    <div class="container text-center">
+                    <div id="item-container-{{ item_index }}" class="container text-center">
                         <div class="row mb-3">
                             <div class="col">
-                                <div class="card" style="width: 18rem;height: 10rem;">
+                                <div id="item-{{ item_index }}-content" class="card" style="width: 18rem;height: 10rem;">
                                     <div class="card-body">
                                         {{ form.content.value|default_if_none:'' }}
                                     </div>
@@ -128,7 +128,7 @@
                     <div class="row mb-3">
                         <div class="col">
                             <div class="card" style="width: 18rem;height: 10rem;">
-                                <div class="card-body">
+                                <div id="item-__prefix0__-content" class="card-body">
                                 </div>
                             </div>
                         </div>
@@ -242,6 +242,22 @@
             const deleteItem = newLiRow.querySelector(".deleteItem");
             deleteItem.addEventListener("click", function(event) {
                 event.currentTarget.closest("li").remove();
+
+                let formNum = parseInt(totalForms0.value);
+                const match = event.currentTarget.id.match(/^id_item-(\d+)-DELETE$/);
+                if (match) {
+                    const index = Number(match[1]);
+
+                    let itemContainer = document.getElementById(`item-container-${index}`);
+                    console.log("Hello World Start");
+                    console.log(index);
+                    console.log(itemContainer);
+                    console.log("Hello World End");
+                    itemContainer.remove();
+
+                    // 총 폼 개수 감소
+                    totalForms0.value = formNum - 1;
+                }
             });
 
             formContainer0.insertBefore(newLiRow, emptyForm);
@@ -253,6 +269,7 @@
             let emptyFormDetail = document.getElementById("empty-form-detail");
             const newDetailRow = emptyFormDetail.cloneNode(true); // li 전체 복제
             newDetailRow.removeAttribute("id");             // id 속성 제거
+            newDetailRow.setAttribute("id", "item-container-__prefix0__");             // id 속성 추가
             let newDetailForm = newDetailRow.outerHTML.replace(/__prefix0__/g, formNum);
 
             // 새로운 행 DOM으로 삽입
