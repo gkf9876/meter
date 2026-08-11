@@ -98,12 +98,18 @@ def modify(request, thirdHabit_id):
         detail_valid = True
         for index, item_form in enumerate(formset):
             item = item_form.instance
-            detail_formsets[item.id] = ThirdHabitItemDetailFormSet(
+
+            if item.pk:
+                detail_queryset = item.detailItem.filter(use_yn='Y').order_by('create_date')
+            else:
+                detail_queryset = ThirdHabitItemDetail.objects.none()
+
+            detail_formsets[index] = ThirdHabitItemDetailFormSet(
                 request.POST,
                 prefix=f'item-{index}-detail',
-                queryset=item.detailItem.filter(use_yn='Y').order_by('create_date')
+                queryset=detail_queryset
             )
-            if not detail_formsets[item.id].is_valid():
+            if not detail_formsets[index].is_valid():
                 detail_valid = False
                 break
         if form.is_valid() and formset.is_valid() and detail_valid:
@@ -129,7 +135,7 @@ def modify(request, thirdHabit_id):
                 item.update_date = timezone.now()
                 item.save()
                 thirdHabit.item.add(item)
-                thirdHabit_detailItems = detail_formsets[item.id].save(commit=False)
+                thirdHabit_detailItems = detail_formsets[index].save(commit=False)
                 for detail in thirdHabit_detailItems:
                     detail.save()
                     item.detailItem.add(detail)

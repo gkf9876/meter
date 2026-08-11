@@ -262,7 +262,7 @@
             newDivRow.style.display = ""; // 보이게
             const addDetailItem = newDivRow.querySelector(".addDetailItem");
             addDetailItem.addEventListener("click", function(event) {
-                const index = 3;
+                const index = event.currentTarget.id.replace("addDetailItem", "");
 
                 const formContainer = document.querySelector(`#form-container1-${index} ul`);
                 const totalForms = document.getElementById(`id_item-${index}-detail-TOTAL_FORMS`);
