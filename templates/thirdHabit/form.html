@@ -133,7 +133,7 @@
                             </div>
                         </div>
                         <div class="col">
-                            <div>
+                            <div id="form-container1-__prefix0__">
                                 <ul class="list-group mb-3">
                                     <input type="hidden" name="item-__prefix0__-detail-TOTAL_FORMS" value="0" id="id_item-__prefix0__-detail-TOTAL_FORMS">
                                     <input type="hidden" name="item-__prefix0__-detail-INITIAL_FORMS" value="0" id="id_item-__prefix0__-detail-INITIAL_FORMS">
@@ -141,14 +141,14 @@
                                     <input type="hidden" name="item-__prefix0__-detail-MAX_NUM_FORMS" value="1000" id="id_item-__prefix0__-detail-MAX_NUM_FORMS">
 
                                     <!-- 숨겨진 empty_form (템플릿용) -->
-                                    <li id="empty-form__prefix0__" class="list-group-item" style="display:none;">
+                                    <li id="empty-form-__prefix0__-detail" class="list-group-item" style="display:none;">
                                         <input type="hidden" id="id_item-__prefix0__-detail-__prefix1__-id" name="item-__prefix0__-detail-__prefix1__-id" value="">
                                         <input type="hidden" id="id_item-__prefix0__-detail-__prefix1__-use_yn" name="item-__prefix0__-detail-__prefix1__-use_yn" value="Y">
                                         <input type="text" id="id_item-__prefix0__-detail-__prefix1__-content" name="item-__prefix0__-detail-__prefix1__-content" class="form-control" placeholder="예: 개인">
                                         <button type="button" id="id_item-__prefix0__-detail-__prefix1__-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
                                     </li>
                                 </ul>
-                            </div>
+                            </divform-container1-2>
                             <button type="button" class="btn btn-secondary mb-3 addDetailItem" id="addDetailItem__prefix0__">+ 할일 추가</button>
                         </div>
                     </div>
@@ -260,6 +260,34 @@
             tempDetail.innerHTML = newDetailForm;
             const newDivRow = tempDetail.querySelector("div");
             newDivRow.style.display = ""; // 보이게
+            const addDetailItem = newDivRow.querySelector(".addDetailItem");
+            addDetailItem.addEventListener("click", function(event) {
+                const index = 3;
+
+                const formContainer = document.querySelector(`#form-container1-${index} ul`);
+                const totalForms = document.getElementById(`id_item-${index}-detail-TOTAL_FORMS`);
+
+                let formNum = parseInt(totalForms.value);
+                let emptyForm = document.getElementById(`empty-form-${index}-detail`);
+                const newRow = emptyForm.cloneNode(true); // li 전체 복제
+                newRow.removeAttribute("id");             // id 속성 제거
+                let newForm = newRow.outerHTML.replace(/__prefix0__/g, index).replace(/__prefix1__/g, formNum);
+
+                // 새로운 행 DOM으로 삽입
+                const temp = document.createElement("ul");
+                temp.innerHTML = newForm;
+                const newLiRow = temp.querySelector("li");
+                newLiRow.style.display = "flex"; // 보이게
+                const deleteItem = newLiRow.querySelector(".deleteItem");
+                deleteItem.addEventListener("click", function(event) {
+                    event.currentTarget.closest("li").remove();
+                });
+
+                formContainer.insertBefore(newLiRow, emptyForm);
+
+                // 총 폼 개수 증가
+                totalForms.value = formNum + 1;
+            });
 
             formContainer1.insertBefore(newDivRow, emptyFormDetail);
         });
