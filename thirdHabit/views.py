@@ -37,20 +37,39 @@ def index(request):
 def detail(request, thirdHabit_id):
     thirdHabit = get_object_or_404(ThirdHabit, Q(author_id=request.user.id) | Q(notice_yn=True), pk=thirdHabit_id, use_yn='Y')
     ThirdHabitFormSet = modelformset_factory(ThirdHabitItem, form=ThirdHabitItemForm, extra=0, can_delete=True)
+    ThirdHabitItemDetailFormSet = modelformset_factory(ThirdHabitItemDetail, form=ThirdHabitItemDetailForm, extra=0, can_delete=True)
     if request.user != thirdHabit.author:
         thirdHabit.viewcount.add(request.user)
-    formset = ThirdHabitFormSet(queryset=thirdHabit.item.filter(use_yn='Y').order_by('create_date'))
-    context = {'thirdHabit': thirdHabit, 'formset': formset}
+    formset = ThirdHabitFormSet(prefix='item', queryset=thirdHabit.item.filter(use_yn='Y').order_by('create_date'))
+    detail_formsets = {}
+    for index, item_form in enumerate(formset):
+        item = item_form.instance
+        detail_formsets[item.id] = ThirdHabitItemDetailFormSet(
+            prefix=f'item-{index}-detail',
+            queryset=item.detailItem.filter(use_yn='Y').order_by('create_date')
+        )
+    context = {'thirdHabit': thirdHabit, 'formset': formset, 'detail_formsets': detail_formsets}
     return render(request, 'thirdHabit/detail.html', context)
 
 @login_required(login_url='common:login')
 def create(request):
     ThirdHabitFormSet = modelformset_factory(ThirdHabitItem, form=ThirdHabitItemForm, extra=0, can_delete=True)
-
+    ThirdHabitItemDetailFormSet = modelformset_factory(ThirdHabitItemDetail, form=ThirdHabitItemDetailForm, extra=0, can_delete=True)
     if request.method == 'POST':
         form = ThirdHabitForm(request.POST)
-        formset = ThirdHabitFormSet(request.POST, queryset=ThirdHabitItem.objects.none())
-        if form.is_valid() and formset.is_valid():
+        formset = ThirdHabitFormSet(request.POST, prefix='item', queryset=ThirdHabitItem.objects.none())
+        detail_formsets = {}
+        detail_valid = True
+        for index, item_form in enumerate(formset):
+            detail_formsets[index] = ThirdHabitItemDetailFormSet(
+                request.POST,
+                prefix=f'item-{index}-detail',
+                queryset=ThirdHabitItemDetail.objects.none()
+            )
+            if not detail_formsets[index].is_valid():
+                detail_valid = False
+                break
+        if form.is_valid() and formset.is_valid() and detail_valid:
             files = request.FILES.getlist('file')
             total_files_size = sum([file.size for file in files])
             if total_files_size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
@@ -65,10 +84,15 @@ def create(request):
             thirdHabit.author = request.user
             thirdHabit.create_date = timezone.now()
             thirdHabit.save()
-            thirdHabit_items = formset.save(commit=False)
-            for item in thirdHabit_items:
+            for index, item_form in enumerate(formset):
+                item = item_form.instance
+                item.update_date = timezone.now()
                 item.save()
                 thirdHabit.item.add(item)
+                thirdHabit_detailItems = detail_formsets[index].save(commit=False)
+                for detail in thirdHabit_detailItems:
+                    detail.save()
+                    item.detailItem.add(detail)
             for file in files:
                 file_instance = File()
                 file_instance.name = file.name
@@ -78,8 +102,15 @@ def create(request):
             return redirect('thirdHabit:index')
     else:
         form = ThirdHabitForm()
-        formset = ThirdHabitFormSet(queryset=ThirdHabitItem.objects.none())
-    context = {'form': form, 'formset': formset}
+        formset = ThirdHabitFormSet(prefix='item', queryset=ThirdHabitItem.objects.none())
+        detail_formsets = {}
+        for index, item_form in enumerate(formset):
+            item = item_form.instance
+            detail_formsets[item.id] = ThirdHabitItemDetailFormSet(
+                prefix=f'item-{index}-detail',
+                queryset=ThirdHabitItemDetail.objects.none()
+            )
+    context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets}
     return render(request, 'thirdHabit/form.html', context)
 
 @login_required(login_url='common:login')
@@ -98,12 +129,10 @@ def modify(request, thirdHabit_id):
         detail_valid = True
         for index, item_form in enumerate(formset):
             item = item_form.instance
-
             if item.pk:
                 detail_queryset = item.detailItem.filter(use_yn='Y').order_by('create_date')
             else:
                 detail_queryset = ThirdHabitItemDetail.objects.none()
-
             detail_formsets[index] = ThirdHabitItemDetailFormSet(
                 request.POST,
                 prefix=f'item-{index}-detail',
@@ -129,7 +158,6 @@ def modify(request, thirdHabit_id):
             thirdHabit = form.save(commit=False)
             thirdHabit.update_date = timezone.now()
             thirdHabit.save()
-
             for index, item_form in enumerate(formset):
                 item = item_form.instance
                 item.update_date = timezone.now()
