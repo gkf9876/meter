@@ -63,7 +63,7 @@
                         <li class="list-group-item" style="display: flex;">
                             <input type="hidden" id="{{ form.id.id_for_label }}" name="{{ form.id.html_name }}" value="{{ form.id.value|default_if_none:'' }}">
                             <input type="hidden" id="id_item-{{ forloop.counter0 }}-use_yn" name="item-{{ forloop.counter0 }}-use_yn" value="Y">
-                            <input type="text" id="id_item-{{ forloop.counter0 }}-content" name="item-{{ forloop.counter0 }}-content" class="form-control" placeholder="예: 개인" style="flex: 1;"  value="{{ form.content.value|default_if_none:'' }}">
+                            <input type="text" id="id_item-{{ forloop.counter0 }}-content" name="item-{{ forloop.counter0 }}-content" class="form-control item-content" placeholder="예: 개인" style="flex: 1;"  value="{{ form.content.value|default_if_none:'' }}">
                             <button type="button" id="id_item-{{ forloop.counter0 }}-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
                         </li>
                     {% endfor %}
@@ -71,7 +71,7 @@
                     <li id="empty-form0" class="list-group-item" style="display:none;">
                         <input type="hidden" id="{{ formset.empty_form.id.id_for_label }}" name="{{ formset.empty_form.id.html_name }}" value="">
                         <input type="hidden" id="id_item-__prefix__-use_yn" name="item-__prefix__-use_yn" value="Y">
-                        <input type="text" id="id_item-__prefix__-content" name="item-__prefix__-content" class="form-control" placeholder="예: 개인">
+                        <input type="text" id="id_item-__prefix__-content" name="item-__prefix__-content" class="form-control item-content" placeholder="예: 개인">
                         <button type="button" id="id_item-__prefix__-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
                     </li>
                 </ul>
@@ -86,8 +86,8 @@
                     <div id="item-container-{{ item_index }}" class="container text-center">
                         <div class="row mb-3">
                             <div class="col">
-                                <div id="item-{{ item_index }}-content" class="card" style="width: 18rem;height: 10rem;">
-                                    <div class="card-body">
+                                <div class="card" style="width: 18rem;height: 10rem;">
+                                    <div id="item-{{ item_index }}-content"  class="card-body">
                                         {{ form.content.value|default_if_none:'' }}
                                     </div>
                                 </div>
@@ -249,14 +249,21 @@
                     const index = Number(match[1]);
 
                     let itemContainer = document.getElementById(`item-container-${index}`);
-                    console.log("Hello World Start");
-                    console.log(index);
-                    console.log(itemContainer);
-                    console.log("Hello World End");
                     itemContainer.remove();
 
                     // 총 폼 개수 감소
                     totalForms0.value = formNum - 1;
+                }
+            });
+            const itemContent = newLiRow.querySelector(".item-content");
+            itemContent.addEventListener("input", function(event) {
+                const match = event.currentTarget.id.match(/^id_item-(\d+)-content$/);
+                if (match) {
+                    const index = Number(match[1]);
+                    let itemContent = document.getElementById(`item-${index}-content`);
+                    if (itemContent) {
+                        itemContent.textContent = event.currentTarget.value;
+                    }
                 }
             });
 
@@ -355,6 +362,20 @@
 
                 // 총 폼 개수 증가
                 totalForms.value = formNum + 1;
+            });
+        });
+
+        const itemContent_elements = document.querySelectorAll(".item-content");
+        Array.from(itemContent_elements).forEach(function(element){
+            element.addEventListener('input', function(event){
+                const match = event.currentTarget.id.match(/^id_item-(\d+)-content$/);
+                if (match) {
+                    const index = Number(match[1]);
+                    let itemContent = document.getElementById(`item-${index}-content`);
+                    if (itemContent) {
+                        itemContent.textContent = event.currentTarget.value;
+                    }
+                }
             });
         });
     </script>
