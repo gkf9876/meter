@@ -175,23 +175,26 @@ def modify(request, thirdHabit_id):
             thirdHabit.update_date = timezone.now()
             thirdHabit.save()
             for index, item_form in enumerate(formset):
-                item = item_form.instance
-                if item_form.has_changed():
-                    item.update_date = timezone.now()
-                    item.save()
+                if not item_form.has_changed():
+                    continue
+                item = item_form.save(commit=False)
+                item.update_date = timezone.now()
+                item.save()
                 thirdHabit.item.add(item)
                 for detailIndex, detailItem_form in enumerate(detail_formsets[index]):
-                    detail = detailItem_form.instance
-                    if detailItem_form.has_changed():
-                        detail.update_date = timezone.now()
-                        detail.save()
+                    if not detailItem_form.has_changed():
+                        continue
+                    detail = detailItem_form.save(commit=False)
+                    detail.update_date = timezone.now()
+                    detail.save()
                     item.detailItem.add(detail)
-                    for detailIndex, detailTime_form in enumerate(detailTime_formsets[index][detailIndex]):
-                        if detailTime_form.has_changed():
-                            detailTime = detailTime_form.save(commit=False)
-                            detailTime.update_date = timezone.now()
-                            detailTime.save()
-                            detail.detailTimeItem.add(detailTime)
+                    for detailTimeItemIndex, detailTimeItem_form in enumerate(detailTime_formsets[index][detailIndex]):
+                        if not detailItem_form.has_changed():
+                            continue
+                        detailTimeItem = detailTimeItem_form.save(commit=False)
+                        detailTimeItem.update_date = timezone.now()
+                        detailTimeItem.save()
+                        detail.detailTimeItem.add(detailTimeItem)
             for file in files:
                 file_instance = File()
                 file_instance.name = file.name

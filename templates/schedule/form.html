@@ -246,7 +246,9 @@
 
             deleteButton.addEventListener("click", function(event) {
                 event.currentTarget.closest("tr").remove();
-                totalForms.value = formNum - 1;
+
+                let currentFormNum = parseInt(totalForms.value);
+                totalForms.value = currentFormNum - 1;
             });
         });
 
