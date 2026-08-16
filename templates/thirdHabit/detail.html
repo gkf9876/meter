@@ -83,6 +83,80 @@
                     {% endfor %}
                 </div>
             </div>
+            <div class="mb-3">
+                <div id="form-container2">
+                    {% for form in formset %}
+                        {% with item=form.instance %}
+                        {% with item_index=forloop.counter0 %}
+                        {% with detail_formset=detail_formsets|get_item:item_index %}
+                        {% with detailItem_index=forloop.counter0 %}
+                        {% for detail_form in detail_formset %}
+                            {% with detailItem=detail_form.instance %}
+                            {% with detailItem_index=forloop.counter0 %}
+                                <div class="card-body">
+                                    <div id="form-container2-{{ item_index }}-{{ detailItem_index }}">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">#</th>
+                                                    <th scope="col">할일</th>
+                                                    <th scope="col">시작시간</th>
+                                                    <th scope="col">종료시간</th>
+                                                    <th scope="col"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% with detailTime_formsets_by_item=detailTime_formsets|get_item:item_index %}
+                                                    {% with detailTime_formset=detailTime_formsets_by_item|get_item:detailItem_index %}
+                                                        {{ detailTime_formset.management_form }}
+                                                        {% if detailTime_formset|length > 0 %}
+                                                            {% for detailTime_form in detailTime_formset %}
+                                                                <tr>
+                                                                    <th scope="row">{{ item_index }}</th>
+                                                                    <td>{{ detail_form.content.value|default_if_none:'' }}</td>
+                                                                    <td>
+                                                                        <div class="input-group mb-3">
+                                                                            {% if detailTime_form.end_day.value == "MON" %}월요일{% endif %}
+                                                                            {% if detailTime_form.end_day.value == "TUE" %}화요일{% endif %}
+                                                                            {% if detailTime_form.end_day.value == "WED" %}수요일{% endif %}
+                                                                            {% if detailTime_form.end_day.value == "THU" %}목요일{% endif %}
+                                                                            {% if detailTime_form.end_day.value == "FRI" %}금요일{% endif %}
+                                                                            {% if detailTime_form.end_day.value == "SAT" %}토요일{% endif %}
+                                                                            {% if detailTime_form.end_day.value == "SUN" %}일요일{% endif %}
+                                                                            {{ detailTime_form.start_time.value|smart_time }}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="input-group mb-3">
+                                                                            {% if detailTime_form.end_day.value == "MON" %}월요일{% endif %}
+                                                                            {% if detailTime_form.end_day.value == "TUE" %}화요일{% endif %}
+                                                                            {% if detailTime_form.end_day.value == "WED" %}수요일{% endif %}
+                                                                            {% if detailTime_form.end_day.value == "THU" %}목요일{% endif %}
+                                                                            {% if detailTime_form.end_day.value == "FRI" %}금요일{% endif %}
+                                                                            {% if detailTime_form.end_day.value == "SAT" %}토요일{% endif %}
+                                                                            {% if detailTime_form.end_day.value == "SUN" %}일요일{% endif %}
+                                                                            {{ detailTime_form.end_time.value|smart_time }}
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% endwith %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            {% endwith %}
+                            {% endwith %}
+                        {% endfor %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+            </div>
             <div class="card-text">{{ thirdHabit.content|safe }}</div>
             <div class="d-flex justify-content-end">
                 {% if thirdHabit.update_date %}
