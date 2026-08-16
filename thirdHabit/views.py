@@ -175,21 +175,21 @@ def modify(request, thirdHabit_id):
             thirdHabit.update_date = timezone.now()
             thirdHabit.save()
             for index, item_form in enumerate(formset):
-                if not item_form.has_changed():
+                if item_form.instance.pk is None and not item_form.has_changed():
                     continue
                 item = item_form.save(commit=False)
                 item.update_date = timezone.now()
                 item.save()
                 thirdHabit.item.add(item)
                 for detailIndex, detailItem_form in enumerate(detail_formsets[index]):
-                    if not detailItem_form.has_changed():
+                    if detailItem_form.instance.pk is None and not detailItem_form.has_changed():
                         continue
                     detail = detailItem_form.save(commit=False)
                     detail.update_date = timezone.now()
                     detail.save()
                     item.detailItem.add(detail)
                     for detailTimeItemIndex, detailTimeItem_form in enumerate(detailTime_formsets[index][detailIndex]):
-                        if not detailItem_form.has_changed():
+                        if detailTimeItem_form.instance.pk is None and not detailTimeItem_form.has_changed():
                             continue
                         detailTimeItem = detailTimeItem_form.save(commit=False)
                         detailTimeItem.update_date = timezone.now()
