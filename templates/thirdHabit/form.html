@@ -75,7 +75,7 @@
                 {% for form in formset %}
                     {% with item=form.instance %}
                     {% with item_index=forloop.counter0 %}
-                    <div id="item-container-{{ item_index }}" class="container text-center">
+                    <div id="item-container-{{ item_index }}" class="container">
                         <div class="row mb-3">
                             <div class="col">
                                 <div class="card" style="width: 18rem;height: 10rem;">
@@ -106,6 +106,128 @@
                             </div>
                         </div>
                     </div>
+                    {% endwith %}
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        </div>
+        <div class="mb-3">
+            <div id="form-container2">
+                {% for form in formset %}
+                    {% with item=form.instance %}
+                    {% with item_index=forloop.counter0 %}
+                    {% with detail_formset=detail_formsets|get_item:item_index %}
+                    {% with detailItem_index=forloop.counter0 %}
+                    {% for detail_form in detail_formset %}
+                        {% with detailItem=detail_form.instance %}
+                        {% with detailItem_index=forloop.counter0 %}
+                            <div class="card-body">
+                                <div id="form-container2-{{ item_index }}-{{ detailItem_index }}">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">#</th>
+                                                <th scope="col">할일</th>
+                                                <th scope="col">시작시간</th>
+                                                <th scope="col">종료시간</th>
+                                                <th scope="col"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% with detailTime_formsets_by_item=detailTime_formsets|get_item:item_index %}
+                                                {% with detailTime_formset=detailTime_formsets_by_item|get_item:detailItem_index %}
+                                                    {{ detailTime_formset.management_form }}
+                                                    {% if detailTime_formset|length > 0 %}
+                                                        {% for detailTime_form in detailTime_formset %}
+                                                            <tr>
+                                                                <th scope="row">
+                                                                    <input type="hidden" id="{{ detailTime_form.id.id_for_label }}" name="{{ detailTime_form.id.html_name }}" value="{{ detailTime_form.id.value|default_if_none:'' }}">
+                                                                    <input type="hidden" id="{{ detailTime_form.use_yn.id_for_label }}" name="{{ detailTime_form.use_yn.html_name }}" value="Y">
+                                                                    {{ item_index }}
+                                                                </th>
+                                                                <td>{{ detail_form.content.value|default_if_none:'' }}</td>
+                                                                <td>
+                                                                    <div class="input-group mb-3">
+                                                                        <select id="{{ detailTime_form.start_day.id_for_label }}" name="{{ detailTime_form.start_day.html_name }}" class="form-select" >
+                                                                            <option value="MON" {% if detailTime_form.start_day.value == "MON" %}selected{% endif %}>월요일</option>
+                                                                            <option value="TUE" {% if detailTime_form.start_day.value == "TUE" %}selected{% endif %}>화요일</option>
+                                                                            <option value="WED" {% if detailTime_form.start_day.value == "WED" %}selected{% endif %}>수요일</option>
+                                                                            <option value="THU" {% if detailTime_form.start_day.value == "THU" %}selected{% endif %}>목요일</option>
+                                                                            <option value="FRI" {% if detailTime_form.start_day.value == "FRI" %}selected{% endif %}>금요일</option>
+                                                                            <option value="SAT" {% if detailTime_form.start_day.value == "SAT" %}selected{% endif %}>토요일</option>
+                                                                            <option value="SUN" {% if detailTime_form.start_day.value == "SUN" %}selected{% endif %}>일요일</option>
+                                                                        </select>
+                                                                        <input type="time" id="{{ detailTime_form.start_time.id_for_label }}" name="{{ detailTime_form.start_time.html_name }}" class="form-control" value="{{ detailTime_form.start_time.value|smart_time }}">
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="input-group mb-3">
+                                                                        <select id="{{ detailTime_form.end_day.id_for_label }}" name="{{ detailTime_form.end_day.html_name }}" class="form-select" >
+                                                                            <option value="MON" {% if detailTime_form.end_day.value == "MON" %}selected{% endif %}>월요일</option>
+                                                                            <option value="TUE" {% if detailTime_form.end_day.value == "TUE" %}selected{% endif %}>화요일</option>
+                                                                            <option value="WED" {% if detailTime_form.end_day.value == "WED" %}selected{% endif %}>수요일</option>
+                                                                            <option value="THU" {% if detailTime_form.end_day.value == "THU" %}selected{% endif %}>목요일</option>
+                                                                            <option value="FRI" {% if detailTime_form.end_day.value == "FRI" %}selected{% endif %}>금요일</option>
+                                                                            <option value="SAT" {% if detailTime_form.end_day.value == "SAT" %}selected{% endif %}>토요일</option>
+                                                                            <option value="SUN" {% if detailTime_form.end_day.value == "SUN" %}selected{% endif %}>일요일</option>
+                                                                        </select>
+                                                                        <input type="time" id="{{ detailTime_form.end_time.id_for_label }}" name="{{ detailTime_form.end_time.html_name }}" class="form-control" value="{{ detailTime_form.end_time.value|smart_time }}">
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <button type="button" id="id_item-{{ item_index }}-detail-{{ detailItem_index }}-time-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
+                                                                </td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <tr>
+                                                            <th scope="row">{{ item_index }}</th>
+                                                            <td>{{ detail_form.content.value|default_if_none:'' }}</td>
+                                                            <td>
+                                                                <div class="input-group mb-3">
+                                                                    <select id="id_item-{{ item_index }}-detail-{{ detailItem_index }}-time-0-start_day" name="item-{{ item_index }}-detail-{{ detailItem_index }}-time-0-start_day" class="form-select" >
+                                                                        <option value="MON">월요일</option>
+                                                                        <option value="TUE">화요일</option>
+                                                                        <option value="WED">수요일</option>
+                                                                        <option value="THU">목요일</option>
+                                                                        <option value="FRI">금요일</option>
+                                                                        <option value="SAT">토요일</option>
+                                                                        <option value="SUN">일요일</option>
+                                                                    </select>
+                                                                    <input type="time" id="id_item-{{ item_index }}-detail-{{ detailItem_index }}-time-0-start_time" name="item-{{ item_index }}-detail-{{ detailItem_index }}-time-0-start_time" class="form-control">
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div class="input-group mb-3">
+                                                                    <select id="id_item-{{ item_index }}-detail-{{ detailItem_index }}-time-0-end_day" name="item-{{ item_index }}-detail-{{ detailItem_index }}-time-0-end_day" class="form-select" >
+                                                                        <option value="0">월요일</option>
+                                                                        <option value="1">화요일</option>
+                                                                        <option value="2">수요일</option>
+                                                                        <option value="3">목요일</option>
+                                                                        <option value="4">금요일</option>
+                                                                        <option value="5">토요일</option>
+                                                                        <option value="6">일요일</option>
+                                                                    </select>
+                                                                    <input type="time" id="id_item-{{ item_index }}-detail-{{ detailItem_index }}-time-0-end_time" name="item-{{ item_index }}-detail-{{ detailItem_index }}-time-0-end_time" class="form-control">
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <button type="button" id="id_item-{{ item_index }}-detail-{{ detailItem_index }}-time-0-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
+                                                            </td>
+                                                        </tr>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% endwith %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <button type="button" class="btn btn-secondary mb-3 addItemDetailTime" id="addItemDetailTime{{ item_index }}-{{ detailItem_index }}">+ 일정 추가</button>
+                            </div>
+                        {% endwith %}
+                        {% endwith %}
+                    {% endfor %}
+                    {% endwith %}
+                    {% endwith %}
                     {% endwith %}
                     {% endwith %}
                 {% endfor %}
@@ -164,7 +286,7 @@
     </ul>
 </div>
 
-<div id="empty-form-detail" class="container text-center" style="display:none;">
+<div id="empty-form-detail" class="container" style="display:none;">
     <div class="row mb-3">
         <div class="col">
             <div class="card" style="width: 18rem;height: 10rem;">
@@ -193,6 +315,51 @@
     <input type="text" id="id_item-__prefix0__-detail-__prefix1__-content" name="item-__prefix0__-detail-__prefix1__-content" class="form-control" placeholder="예: 개인">
     <button type="button" id="id_item-__prefix0__-detail-__prefix1__-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
 </li>
+
+<table class="table" style="display:none;">
+    <thead></thead>
+    <tbody>
+        <!-- 숨겨진 empty_form (템플릿용) -->
+        <tr id="empty-form-__prefix0__-detail-__prefix1__-time-__prefix2__" style="display:none;">
+            <th scope="row">
+                <input type="hidden" id="id_item-__prefix0__-detail-__prefix1__-time-__prefix2__-id" name="item-__prefix0__-detail-__prefix1__-time-__prefix2__-id" value="">
+                <input type="hidden" id="id_item-__prefix0__-detail-__prefix1__-time-__prefix2__-use_yn" name="item-__prefix0__-detail-__prefix1__-time-__prefix2__-use_yn" value="Y">
+            </th>
+            <td></td>
+            <td>
+                <div class="input-group mb-3">
+                    <select id="id_item-__prefix0__-detail-__prefix1__-time-__prefix2__-start_day." name="item-__prefix0__-detail-__prefix1__-time-__prefix2__-start_day" class="form-select" >
+                        <option value="MON">월요일</option>
+                        <option value="TUE">화요일</option>
+                        <option value="WED">수요일</option>
+                        <option value="THU">목요일</option>
+                        <option value="FRI">금요일</option>
+                        <option value="SAT">토요일</option>
+                        <option value="SUN">일요일</option>
+                    </select>
+                    <input type="time" id="id_item-__prefix0__-detail-__prefix1__-time-__prefix2__-start_time" name="item-__prefix0__-detail-__prefix1__-time-__prefix2__-start_time" class="form-control" value="">
+                </div>
+            </td>
+            <td>
+                <div class="input-group mb-3">
+                    <select id="id_item-__prefix0__-detail-__prefix1__-time-__prefix2__-end_day" name="item-__prefix0__-detail-__prefix1__-time-__prefix2__-end_day" class="form-select" >
+                        <option value="MON">월요일</option>
+                        <option value="TUE">화요일</option>
+                        <option value="WED">수요일</option>
+                        <option value="THU">목요일</option>
+                        <option value="FRI">금요일</option>
+                        <option value="SAT">토요일</option>
+                        <option value="SUN">일요일</option>
+                    </select>
+                    <input type="time" id="id_item-__prefix0__-detail-__prefix1__-time-__prefix2__-end_time" name="item-__prefix0__-detail-__prefix1__-time-__prefix2__-end_time" class="form-control" value="">
+                </div>
+            </td>
+            <td>
+                <button type="button" id="id_item-__prefix0__-detail-__prefix1__-time-__prefix2__-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
 {% endblock %}
 {% block script %}
     <script>
@@ -402,6 +569,49 @@
                     if (itemContent) {
                         itemContent.textContent = event.currentTarget.value;
                     }
+                }
+            });
+        });
+
+        const addItemDetailTime_elements = document.getElementsByClassName("addItemDetailTime");
+        Array.from(addItemDetailTime_elements).forEach(function(element){
+            element.addEventListener('click', function(event){
+                const match = event.currentTarget.id.match(/(\d+)-(\d+)$/);
+                if (match && match.length == 3) {
+                    const itemIndex = parseInt(match[1]);
+                    const detailIndex = parseInt(match[2]);
+
+                    const formContainer = document.querySelector(`#form-container2-${itemIndex}-${detailIndex} tbody`);
+                    const totalForms = document.getElementById(`id_item-${itemIndex}-detail-${detailIndex}-time-TOTAL_FORMS`);
+
+                    let formNum = parseInt(totalForms.value);
+                    let emptyForm = document.getElementById(`empty-form-__prefix0__-detail-__prefix1__-time-__prefix2__`);
+                    const newRow = emptyForm.cloneNode(true); // li 전체 복제
+                    newRow.removeAttribute("id");             // id 속성 제거
+                    let newForm = newRow.outerHTML.replace(/__prefix0__/g, itemIndex).replace(/__prefix1__/g, detailIndex).replace(/__prefix2__/g, formNum);
+
+                    // 새로운 행 DOM으로 삽입
+                    const temp = document.createElement("tbody");
+                    temp.innerHTML = newForm;
+                    const newLiRow = temp.querySelector("tr");
+                    newLiRow.style.display = ""; // 보이게
+                    const deleteItem = newLiRow.querySelector(".deleteItem");
+                    deleteItem.addEventListener("click", function(event) {
+                        event.currentTarget.closest("tr").remove();
+                        totalForms.value = formNum - 1;
+                    });
+
+                    console.log("Hello World Start");
+                    console.log(newLiRow);
+                    console.log(formContainer);
+                    console.log(`${itemIndex}`);
+                    console.log(`${detailIndex}`);
+                    console.log("Hello World End");
+
+                    formContainer.appendChild(newLiRow);
+
+                    // 총 폼 개수 증가
+                    totalForms.value = formNum + 1;
                 }
             });
         });

@@ -11,8 +11,9 @@ from django.utils import timezone
 
 from common.models import File
 from common.views import move_temp_images_to_uploads, delete_unused_images
-from .forms import ThirdHabitForm, ThirdHabitItemForm, ThirdHabitDetailForm, ThirdHabitItemDetailForm
-from .models import ThirdHabit, ThirdHabitItem, ThirdHabitDetail, ThirdHabitItemDetail
+from .forms import ThirdHabitForm, ThirdHabitItemForm, ThirdHabitDetailForm, ThirdHabitItemDetailForm, \
+    ThirdHabitItemDetailTimeForm
+from .models import ThirdHabit, ThirdHabitItem, ThirdHabitDetail, ThirdHabitItemDetail, ThirdHabitItemDetailTime
 
 
 @login_required(login_url='common:login')
@@ -117,6 +118,7 @@ def modify(request, thirdHabit_id):
     thirdHabit = get_object_or_404(ThirdHabit, pk=thirdHabit_id)
     ThirdHabitItemFormSet = modelformset_factory(ThirdHabitItem, form=ThirdHabitItemForm, extra=0, can_delete=True)
     ThirdHabitItemDetailFormSet = modelformset_factory(ThirdHabitItemDetail, form=ThirdHabitItemDetailForm, extra=0, can_delete=True)
+    ThirdHabitItemDetailTimeFormSet = modelformset_factory(ThirdHabitItemDetailTime, form=ThirdHabitItemDetailTimeForm, extra=0, can_delete=True)
     thirdHabit_content = thirdHabit.content
     if request.user != thirdHabit.author:
         messages.error(request, '수정권한이 없습니다')
@@ -126,6 +128,8 @@ def modify(request, thirdHabit_id):
         formset = ThirdHabitItemFormSet(request.POST, prefix='item', queryset=thirdHabit.item.filter(use_yn='Y').order_by('create_date'))
         detail_formsets = {}
         detail_valid = True
+        detailTime_formsets = {}
+        detailTime_valid = True
         for index, item_form in enumerate(formset):
             item = item_form.instance
             if item.pk:
@@ -139,18 +143,32 @@ def modify(request, thirdHabit_id):
             )
             if not detail_formsets[index].is_valid():
                 detail_valid = False
-        if form.is_valid() and formset.is_valid() and detail_valid:
+            detailTime_formsets[index] = {}
+            for detailIndex, detailItem_form in enumerate(detail_formsets[index]):
+                detailItem = detailItem_form.instance
+                if detailItem.pk:
+                    detail_queryset = detailItem.detailTimeItem.filter(use_yn='Y').order_by('create_date')
+                else:
+                    detail_queryset = ThirdHabitItemDetailTime.objects.none()
+                detailTime_formsets[index][detailIndex] = ThirdHabitItemDetailTimeFormSet(
+                    request.POST,
+                    prefix=f'item-{index}-detail-{detailIndex}-time',
+                    queryset=detail_queryset
+                )
+                if not detail_formsets[index][detailIndex].is_valid():
+                    detailTime_valid = False
+        if form.is_valid() and formset.is_valid() and detail_valid and detailTime_valid:
             files = request.FILES.getlist('file')
             delete_file_id_list = request.POST.getlist('delete_attached_file')
             total_files_size = sum([file.size for file in files])
             total_files_size += sum([file.file.size for file in thirdHabit.file.all() if str(file.id) not in delete_file_id_list])
             if total_files_size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
                 messages.error(request, '첨부파일의 총용량이 %dMB를 초과할 수 없습니다.' % (settings.FILE_UPLOAD_MAX_MEMORY_SIZE/ 1024 / 1024))
-                context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets}
+                context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets}
                 return render(request, 'thirdHabit/form.html', context)
             if not move_temp_images_to_uploads(request.POST.get('content', '')):
                 messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
-                context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets}
+                context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets}
                 return render(request, 'thirdHabit/form.html', context)
             delete_unused_images(thirdHabit_content, request.POST.get('content', ''))
             thirdHabit = form.save(commit=False)
@@ -158,13 +176,22 @@ def modify(request, thirdHabit_id):
             thirdHabit.save()
             for index, item_form in enumerate(formset):
                 item = item_form.instance
-                item.update_date = timezone.now()
-                item.save()
+                if item_form.has_changed():
+                    item.update_date = timezone.now()
+                    item.save()
                 thirdHabit.item.add(item)
-                thirdHabit_detailItems = detail_formsets[index].save(commit=False)
-                for detail in thirdHabit_detailItems:
-                    detail.save()
+                for detailIndex, detailItem_form in enumerate(detail_formsets[index]):
+                    detail = detailItem_form.instance
+                    if detailItem_form.has_changed():
+                        detail.update_date = timezone.now()
+                        detail.save()
                     item.detailItem.add(detail)
+                    for detailIndex, detailTime_form in enumerate(detailTime_formsets[index][detailIndex]):
+                        if detailTime_form.has_changed():
+                            detailTime = detailTime_form.save(commit=False)
+                            detailTime.update_date = timezone.now()
+                            detailTime.save()
+                            detail.detailTimeItem.add(detailTime)
             for file in files:
                 file_instance = File()
                 file_instance.name = file.name
@@ -183,13 +210,21 @@ def modify(request, thirdHabit_id):
         form = ThirdHabitForm(instance=thirdHabit)
         formset = ThirdHabitItemFormSet(prefix='item', queryset=thirdHabit.item.filter(use_yn='Y').order_by('create_date'))
         detail_formsets = {}
+        detailTime_formsets = {}
         for index, item_form in enumerate(formset):
             item = item_form.instance
             detail_formsets[index] = ThirdHabitItemDetailFormSet(
                 prefix=f'item-{index}-detail',
                 queryset=item.detailItem.filter(use_yn='Y').order_by('create_date')
             )
-    context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets}
+            detailTime_formsets[index] = {}
+            for detailIndex, detailItem_form in enumerate(detail_formsets[index]):
+                detailItem = detailItem_form.instance
+                detailTime_formsets[index][detailIndex] = ThirdHabitItemDetailTimeFormSet(
+                    prefix=f'item-{index}-detail-{detailIndex}-time',
+                    queryset=detailItem.detailTimeItem.filter(use_yn='Y').order_by('create_date')
+                )
+    context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets}
     return render(request, 'thirdHabit/form.html', context)
 
 @login_required(login_url='common:login')

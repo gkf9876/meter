@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ThirdHabit, ThirdHabitItem, ThirdHabitDetail, ThirdHabitItemDetail
+from .models import ThirdHabit, ThirdHabitItem, ThirdHabitDetail, ThirdHabitItemDetail, ThirdHabitItemDetailTime
 
 
 class ThirdHabitAdmin(admin.ModelAdmin):
@@ -8,4 +8,5 @@ class ThirdHabitAdmin(admin.ModelAdmin):
 admin.site.register(ThirdHabit, ThirdHabitAdmin)
 admin.site.register(ThirdHabitItem)
 admin.site.register(ThirdHabitItemDetail)
+admin.site.register(ThirdHabitItemDetailTime)
 admin.site.register(ThirdHabitDetail)

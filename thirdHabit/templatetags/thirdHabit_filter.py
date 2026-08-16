@@ -1,4 +1,5 @@
 from django import template
+from datetime import time, datetime
 
 register = template.Library()
 
@@ -17,3 +18,11 @@ def div(value, arg):
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key)
+
+@register.filter
+def smart_time(value):
+    if not value:
+        return ''
+    if isinstance(value, (time, datetime)):
+        return value.strftime('%H:%M')
+    return str(value)
