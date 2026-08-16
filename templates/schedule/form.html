@@ -16,7 +16,6 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {% include "form_errors.html" %}
-        {% include "formset_errors.html" %}
         <div class="mb-3">
             <label for="subject" class="form-label">제목</label>
             <input type="text" class="form-control" name="subject" id="subject" value="{{ form.subject.value|default_if_none:'' }}">
@@ -69,32 +68,10 @@
                                         <input type="text" id="id_form-{{ forloop.counter0 }}-color" name="form-{{ forloop.counter0 }}-color" class="form-control" value="{{ form.color.value }}" style="background:{{ form.color.value }};color:white;text-align:center;">
                                     </td>
                                     <td>
-                                        <button type="button" id="form-{{ forloop.counter0 }}-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
+                                        <button type="button" id="id_form-{{ forloop.counter0 }}-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
                                     </td>
                                 </tr>
                             {% endfor %}
-                            <!-- 숨겨진 empty_form (템플릿용) -->
-                            <tr id="empty-form" style="display:none;">
-                                <th scope="row">
-                                    <input type="hidden" id="{{ formset.empty_form.id.id_for_label }}" name="{{ formset.empty_form.id.html_name }}" value="">
-                                    <input type="hidden" id="id_form-__prefix__-use_yn" name="form-__prefix__-use_yn" value="Y">
-                                </th>
-                                <td>
-                                    <input type="text" id="id_form-__prefix__-title" name="form-__prefix__-title" class="form-control" placeholder="예: 아침운동" value="{{ formset.empty_form.title.value|default_if_none:'' }}">
-                                </td>
-                                <td>
-                                    <input type="time" id="id_form-__prefix__-start_time" name="form-__prefix__-start_time" class="form-control" value="{{ formset.empty_form.start_time.value }}">
-                                </td>
-                                <td>
-                                    <input type="time" id="id_form-__prefix__-end_time" name="form-__prefix__-end_time" class="form-control" value="{{ formset.empty_form.end_time.value }}">
-                                </td>
-                                <td>
-                                    <input type="text" id="id_form-__prefix__-color" name="form-__prefix__-color" class="form-control" value="{{ formset.empty_form.color.value }}" style="background:{{ form.color.value }};color:white;text-align:center;">
-                                </td>
-                                <td>
-                                    <button type="button" id="d_form-__prefix__-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
-                                </td>
-                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -128,6 +105,33 @@
         <button type="submit" class="btn btn-primary">저장하기</button>
     </form>
 </div>
+<table class="table" style="display:none;">
+    <thead></thead>
+    <tbody>
+        <!-- 숨겨진 empty_form (템플릿용) -->
+        <tr id="empty-form" style="display:none;">
+            <th scope="row">
+                <input type="hidden" id="{{ formset.empty_form.id.id_for_label }}" name="{{ formset.empty_form.id.html_name }}" value="">
+                <input type="hidden" id="id_form-__prefix__-use_yn" name="form-__prefix__-use_yn" value="Y">
+            </th>
+            <td>
+                <input type="text" id="id_form-__prefix__-title" name="form-__prefix__-title" class="form-control" placeholder="예: 아침운동" value="{{ formset.empty_form.title.value|default_if_none:'' }}">
+            </td>
+            <td>
+                <input type="time" id="id_form-__prefix__-start_time" name="form-__prefix__-start_time" class="form-control" value="{{ formset.empty_form.start_time.value }}">
+            </td>
+            <td>
+                <input type="time" id="id_form-__prefix__-end_time" name="form-__prefix__-end_time" class="form-control" value="{{ formset.empty_form.end_time.value }}">
+            </td>
+            <td>
+                <input type="text" id="id_form-__prefix__-color" name="form-__prefix__-color" class="form-control" value="{{ formset.empty_form.color.value }}" style="background:{{ form.color.value }};color:white;text-align:center;">
+            </td>
+            <td>
+                <button type="button" id="id_form-__prefix__-DELETE" class="deleteItem btn btn-danger btn-sm">삭제</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
 {% endblock %}
 {% block script %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -210,7 +214,7 @@
             newTrRow.style.display = ""; // 보이게
             newTrRow.classList.add('schedule-item');
 
-            formContainer.insertBefore(newTrRow, emptyForm);
+            formContainer.appendChild(newTrRow);
 
             // 총 폼 개수 증가
             totalForms.value = formNum + 1;
@@ -223,6 +227,7 @@
             const startInput = insertNewRow.querySelector('[name="form-' + formNum + '-start_time"]');
             const endInput = insertNewRow.querySelector('[name="form-' + formNum + '-end_time"]');
             const colorInput = insertNewRow.querySelector('[name="form-' + formNum + '-color"]');
+            const deleteButton = insertNewRow.querySelector('.deleteItem');
 
             titleInput.addEventListener('change', (e) => {
                 updateChart();
@@ -237,6 +242,11 @@
 
             endInput.addEventListener('change', (e) => {
                 updateChart();
+            });
+
+            deleteButton.addEventListener("click", function(event) {
+                event.currentTarget.closest("tr").remove();
+                totalForms.value = formNum - 1;
             });
         });
 

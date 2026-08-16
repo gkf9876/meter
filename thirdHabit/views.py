@@ -60,25 +60,59 @@ def create(request):
         formset = ThirdHabitFormSet(request.POST, prefix='item', queryset=ThirdHabitItem.objects.none())
         detail_formsets = {}
         detail_valid = True
+
+        print("========== ITEM ==========")
+        print("TOTAL_FORMS :", request.POST.get("item-TOTAL_FORMS"))
+        print("INITIAL_FORMS :", request.POST.get("item-INITIAL_FORMS"))
+        print("MANAGEMENT :", formset.management_form.data)
+        print("ERROR :", formset.management_form.errors)
+        print("==========================")
+
         for index, item_form in enumerate(formset):
+
+            prefix = f"item-{index}-detail"
+
             detail_formsets[index] = ThirdHabitItemDetailFormSet(
                 request.POST,
                 prefix=f'item-{index}-detail',
                 queryset=ThirdHabitItemDetail.objects.none()
             )
+
+            print("==========", prefix, "==========")
+            print("TOTAL_FORMS :", request.POST.get(f"{prefix}-TOTAL_FORMS"))
+            print("INITIAL_FORMS :", request.POST.get(f"{prefix}-INITIAL_FORMS"))
+            print("ERROR :", detail_formsets[index].management_form.errors)
+
             if not detail_formsets[index].is_valid():
                 detail_valid = False
-                break
+
+        print("========== VALIDATION ==========")
+
+        print("form.is_valid() :", form.is_valid())
+        print("form.errors     :", form.errors)
+
+        print("formset.is_valid() :", formset.is_valid())
+        print("formset.errors     :", formset.errors)
+        print("formset.non_form_errors() :", formset.non_form_errors())
+
+        for index, detail_formset in detail_formsets.items():
+            print(f"detail[{index}].is_valid() :", detail_formset.is_valid())
+            print(f"detail[{index}].errors     :", detail_formset.errors)
+            print(
+                f"detail[{index}].non_form_errors() :",
+                detail_formset.non_form_errors()
+            )
+
         if form.is_valid() and formset.is_valid() and detail_valid:
             files = request.FILES.getlist('file')
             total_files_size = sum([file.size for file in files])
             if total_files_size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
                 messages.error(request, '첨부파일의 총용량이 %dMB를 초과할 수 없습니다.' % (settings.FILE_UPLOAD_MAX_MEMORY_SIZE/ 1024 / 1024))
-                context = {'form': form, 'formset': formset}
+                context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets}
                 return render(request, 'thirdHabit/form.html', context)
             if not move_temp_images_to_uploads(request.POST.get('content', '')):
                 messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
-                context = {'form': form, 'formset': formset}
+                context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets}
                 return render(request, 'thirdHabit/form.html', context)
             thirdHabit = form.save(commit=False)
             thirdHabit.author = request.user
