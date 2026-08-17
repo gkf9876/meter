@@ -1,5 +1,5 @@
 from django import forms
-from .models import ThirdHabit, ThirdHabitItem, ThirdHabitDetail, ThirdHabitItemDetail, ThirdHabitItemDetailTime
+from .models import ThirdHabit, ThirdHabitItem, ThirdHabitDetail, ThirdHabitItemDetail, ThirdHabitItemDetailTime, ThirdHabitItemExp
 
 
 class ThirdHabitForm(forms.ModelForm):
@@ -51,4 +51,13 @@ class ThirdHabitDetailForm(forms.ModelForm):
         fields = ['content']
         labels = {
             'content': '내용',
+        }
+
+class ThirdHabitItemExpForm(forms.ModelForm):
+    class Meta:
+        model = ThirdHabitItemExp
+        fields = ['content', 'use_yn']
+        labels = {
+            'content': '내용',
+            'use_yn': '사용여부',
         }

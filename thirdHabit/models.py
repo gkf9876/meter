@@ -37,6 +37,12 @@ class ThirdHabitItem(models.Model):
     update_date = models.DateTimeField(null=True, blank=True)
     detailItem = models.ManyToManyField(ThirdHabitItemDetail, related_name='detailItem_thirdHabit')
 
+class ThirdHabitItemExp(models.Model):
+    content = HTMLField()
+    use_yn = models.CharField(max_length=2, default='Y')
+    create_date = models.DateTimeField(auto_now_add=True)
+    update_date = models.DateTimeField(null=True, blank=True)
+
 class ThirdHabit(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     subject = models.CharField(max_length=200)
@@ -47,6 +53,7 @@ class ThirdHabit(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(null=True, blank=True)
     item = models.ManyToManyField(ThirdHabitItem, related_name='item_thirdHabit')
+    itemExp = models.ManyToManyField(ThirdHabitItemExp, related_name='itemExp_thirdHabit')
     file = models.ManyToManyField(File, related_name='file_thirdHabit')
     voter = models.ManyToManyField(User, related_name='voter_thirdHabit')
     viewcount = models.ManyToManyField(User, related_name='viewcount_thirdHabit')

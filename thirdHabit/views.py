@@ -13,8 +13,9 @@ from datetime import datetime, timedelta
 from common.models import File
 from common.views import move_temp_images_to_uploads, delete_unused_images
 from .forms import ThirdHabitForm, ThirdHabitItemForm, ThirdHabitDetailForm, ThirdHabitItemDetailForm, \
-    ThirdHabitItemDetailTimeForm
-from .models import ThirdHabit, ThirdHabitItem, ThirdHabitDetail, ThirdHabitItemDetail, ThirdHabitItemDetailTime
+    ThirdHabitItemDetailTimeForm, ThirdHabitItemExpForm
+from .models import ThirdHabit, ThirdHabitItem, ThirdHabitDetail, ThirdHabitItemDetail, ThirdHabitItemDetailTime, \
+    ThirdHabitItemExp
 
 
 @login_required(login_url='common:login')
@@ -39,6 +40,7 @@ def index(request):
 def detail(request, thirdHabit_id):
     thirdHabit = get_object_or_404(ThirdHabit, Q(author_id=request.user.id) | Q(notice_yn=True), pk=thirdHabit_id, use_yn='Y')
     ThirdHabitFormSet = modelformset_factory(ThirdHabitItem, form=ThirdHabitItemForm, extra=0, can_delete=True)
+    ThirdHabitItemExpFormSet = modelformset_factory(ThirdHabitItemExp, form=ThirdHabitItemExpForm, extra=0, can_delete=True)
     if request.user != thirdHabit.author:
         thirdHabit.viewcount.add(request.user)
     formset = ThirdHabitFormSet(prefix='item', queryset=thirdHabit.item.filter(use_yn='Y').order_by('create_date'))
@@ -67,6 +69,7 @@ def detail(request, thirdHabit_id):
                 prefix=f'item-{index}-detail-{detailIndex}-time',
                 queryset=detailTime_queryset
             )
+    formsetExp = ThirdHabitItemExpFormSet(prefix='itemExp', queryset=thirdHabit.itemExp.filter(use_yn='Y').order_by('create_date'))
 
     calendar_events = []
     DAY_OFFSET = {
@@ -107,6 +110,7 @@ def detail(request, thirdHabit_id):
         , 'formset': formset
         , 'detail_formsets': detail_formsets
         , 'detailTime_formsets': detailTime_formsets
+        , 'formsetExp': formsetExp
         , 'calendar_events': calendar_events
     }
     return render(request, 'thirdHabit/detail.html', context)
@@ -114,6 +118,7 @@ def detail(request, thirdHabit_id):
 @login_required(login_url='common:login')
 def create(request):
     ThirdHabitFormSet = modelformset_factory(ThirdHabitItem, form=ThirdHabitItemForm, extra=0, can_delete=True)
+    ThirdHabitItemExpFormSet = modelformset_factory(ThirdHabitItemExp, form=ThirdHabitItemExpForm, extra=0, can_delete=True)
     if request.method == 'POST':
         form = ThirdHabitForm(request.POST)
         formset = ThirdHabitFormSet(request.POST, prefix='item', queryset=ThirdHabitItem.objects.none())
@@ -140,16 +145,17 @@ def create(request):
                 )
                 if not detail_formsets[index][detailIndex].is_valid():
                     detailTime_valid = False
-        if form.is_valid() and formset.is_valid() and detail_valid and detailTime_valid:
+        formsetExp = ThirdHabitItemExpFormSet(request.POST, prefix='itemExp', queryset=ThirdHabitItemExp.objects.none())
+        if form.is_valid() and formset.is_valid() and detail_valid and detailTime_valid and formsetExp.is_valid():
             files = request.FILES.getlist('file')
             total_files_size = sum([file.size for file in files])
             if total_files_size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
                 messages.error(request, '첨부파일의 총용량이 %dMB를 초과할 수 없습니다.' % (settings.FILE_UPLOAD_MAX_MEMORY_SIZE/ 1024 / 1024))
-                context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets}
+                context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets, 'formsetExp': formsetExp}
                 return render(request, 'thirdHabit/form.html', context)
             if not move_temp_images_to_uploads(request.POST.get('content', '')):
                 messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
-                context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets}
+                context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets, 'formsetExp': formsetExp}
                 return render(request, 'thirdHabit/form.html', context)
             thirdHabit = form.save(commit=False)
             thirdHabit.author = request.user
@@ -176,6 +182,13 @@ def create(request):
                         detailTimeItem.update_date = timezone.now()
                         detailTimeItem.save()
                         detail.detailTimeItem.add(detailTimeItem)
+            for index, itemExp_form in enumerate(formsetExp):
+                if itemExp_form.instance.pk is None and not itemExp_form.has_changed():
+                    continue
+                item = itemExp_form.save(commit=False)
+                item.update_date = timezone.now()
+                item.save()
+                thirdHabit.itemExp.add(item)
             for file in files:
                 file_instance = File()
                 file_instance.name = file.name
@@ -201,7 +214,8 @@ def create(request):
                     prefix=f'item-{index}-detail-{detailIndex}-time',
                     queryset=ThirdHabitItemDetailTime.objects.none()
                 )
-    context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets}
+        formsetExp = ThirdHabitItemExpFormSet(prefix='itemExp', queryset=ThirdHabitItemExp.objects.none())
+    context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets, 'formsetExp': formsetExp}
     return render(request, 'thirdHabit/form.html', context)
 
 @login_required(login_url='common:login')
@@ -249,18 +263,20 @@ def modify(request, thirdHabit_id):
                 )
                 if not detail_formsets[index][detailIndex].is_valid():
                     detailTime_valid = False
-        if form.is_valid() and formset.is_valid() and detail_valid and detailTime_valid:
+        ThirdHabitItemExpFormSet = modelformset_factory(ThirdHabitItemExp, form=ThirdHabitItemExpForm, extra=0, can_delete=True)
+        formsetExp = ThirdHabitItemExpFormSet(request.POST, prefix='itemExp', queryset=thirdHabit.itemExp.filter(use_yn='Y').order_by('create_date'))
+        if form.is_valid() and formset.is_valid() and detail_valid and detailTime_valid and formsetExp.is_valid():
             files = request.FILES.getlist('file')
             delete_file_id_list = request.POST.getlist('delete_attached_file')
             total_files_size = sum([file.size for file in files])
             total_files_size += sum([file.file.size for file in thirdHabit.file.all() if str(file.id) not in delete_file_id_list])
             if total_files_size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
                 messages.error(request, '첨부파일의 총용량이 %dMB를 초과할 수 없습니다.' % (settings.FILE_UPLOAD_MAX_MEMORY_SIZE/ 1024 / 1024))
-                context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets}
+                context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets, 'formsetExp': formsetExp}
                 return render(request, 'thirdHabit/form.html', context)
             if not move_temp_images_to_uploads(request.POST.get('content', '')):
                 messages.error(request, '본문내용의 이미지 첨부 경로에 문제가 있습니다.')
-                context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets}
+                context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets, 'formsetExp': formsetExp}
                 return render(request, 'thirdHabit/form.html', context)
             delete_unused_images(thirdHabit_content, request.POST.get('content', ''))
             thirdHabit = form.save(commit=False)
@@ -287,6 +303,13 @@ def modify(request, thirdHabit_id):
                         detailTimeItem.update_date = timezone.now()
                         detailTimeItem.save()
                         detail.detailTimeItem.add(detailTimeItem)
+            for index, itemExp_form in enumerate(formsetExp):
+                if itemExp_form.instance.pk is None and not itemExp_form.has_changed():
+                    continue
+                item = itemExp_form.save(commit=False)
+                item.update_date = timezone.now()
+                item.save()
+                thirdHabit.itemExp.add(item)
             for file in files:
                 file_instance = File()
                 file_instance.name = file.name
@@ -331,7 +354,9 @@ def modify(request, thirdHabit_id):
                     prefix=f'item-{index}-detail-{detailIndex}-time',
                     queryset=detailTime_queryset
                 )
-    context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets}
+        ThirdHabitItemExpFormSet = modelformset_factory(ThirdHabitItemExp, form=ThirdHabitItemExpForm, extra=0, can_delete=True)
+        formsetExp = ThirdHabitItemExpFormSet(prefix='itemExp', queryset=thirdHabit.itemExp.filter(use_yn='Y').order_by('create_date'))
+    context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets, 'formsetExp': formsetExp}
     return render(request, 'thirdHabit/form.html', context)
 
 @login_required(login_url='common:login')

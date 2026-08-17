@@ -175,6 +175,15 @@
                     <div id="calendar"></div>
                 </div>
             </div>
+            <div class="mb-3">
+                <div id="form-container4">
+                    <ul class="list-group mb-3">
+                        {% for formExp in formsetExp %}
+                            <li class="list-group-item">{{ formExp.content.value|default_if_none:'' }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
             <div class="card-text">{{ thirdHabit.content|safe }}</div>
             <div class="d-flex justify-content-end">
                 {% if thirdHabit.update_date %}
