@@ -94,7 +94,7 @@
                                                 <li class="list-group-item" style="display: flex;">
                                                     <input type="hidden" id="{{ detail_form.id.id_for_label }}" name="{{ detail_form.id.html_name }}" value="{{ detail_form.id.value|default_if_none:'' }}">
                                                     <input type="hidden" id="{{ detail_form.use_yn.id_for_label }}" name="{{ detail_form.use_yn.html_name }}" value="Y">
-                                                    <input type="text" id="{{ detail_form.content.id_for_label }}" name="{{ detail_form.content.html_name }}" class="form-control" placeholder="예: 개인" style="flex: 1;"  value="{{ detail_form.content.value|default_if_none:'' }}">
+                                                    <input type="text" id="{{ detail_form.content.id_for_label }}" name="{{ detail_form.content.html_name }}" class="form-control item-content" placeholder="예: 개인" style="flex: 1;"  value="{{ detail_form.content.value|default_if_none:'' }}">
                                                     <button type="button" id="id_item-{{ item_index }}-detail-{{ detailItem_index }}-DELETE" class="deleteItemDetail btn btn-danger btn-sm">삭제</button>
                                                 </li>
                                                 {% endwith %}
@@ -144,7 +144,7 @@
                                                                     <input type="hidden" id="{{ detailTime_form.use_yn.id_for_label }}" name="{{ detailTime_form.use_yn.html_name }}" value="Y">
                                                                     {{ item_index }}
                                                                 </th>
-                                                                <td>{{ detail_form.content.value|default_if_none:'' }}</td>
+                                                                <td id="item-{{ item_index }}-content-{{ detailItem_index }}-detail">{{ detail_form.content.value|default_if_none:'' }}</td>
                                                                 <td>
                                                                     <div class="input-group mb-3">
                                                                         <select id="{{ detailTime_form.start_day.id_for_label }}" name="{{ detailTime_form.start_day.html_name }}" class="form-select" >
@@ -241,7 +241,7 @@
         <li id="empty-form-{{ item_index }}-detail" class="list-group-item" style="display:none;">
             <input type="hidden" id="{{ detail_formset.empty_form.id.id_for_label }}" name="{{ detail_formset.empty_form.id.html_name }}" value="">
             <input type="hidden" id="id_item-{{ item_index }}-detail-__prefix1__-use_yn" name="item-{{ item_index }}-detail-__prefix1__-use_yn" value="Y">
-            <input type="text" id="id_item-{{ item_index }}-detail-__prefix1__-content" name="item-{{ item_index }}-detail-__prefix1__-content" class="form-control" placeholder="예: 개인">
+            <input type="text" id="id_item-{{ item_index }}-detail-__prefix1__-content" name="item-{{ item_index }}-detail-__prefix1__-content" class="form-control item-content" placeholder="예: 개인">
             <button type="button" id="id_item-{{ item_index }}-detail-__prefix1__-DELETE" class="deleteItemDetail btn btn-danger btn-sm">삭제</button>
         </li>
         {% endwith %}
@@ -261,10 +261,16 @@
         <div class="col">
             <div id="form-container1-__prefix0__">
                 <ul class="list-group mb-3">
-                    <input type="hidden" name="item-__prefix0__-detail-TOTAL_FORMS" value="0" id="id_item-__prefix0__-detail-TOTAL_FORMS">
+                    <input type="hidden" name="item-__prefix0__-detail-TOTAL_FORMS" value="1" id="id_item-__prefix0__-detail-TOTAL_FORMS">
                     <input type="hidden" name="item-__prefix0__-detail-INITIAL_FORMS" value="0" id="id_item-__prefix0__-detail-INITIAL_FORMS">
                     <input type="hidden" name="item-__prefix0__-detail-MIN_NUM_FORMS" value="0" id="id_item-__prefix0__-detail-MIN_NUM_FORMS">
                     <input type="hidden" name="item-__prefix0__-detail-MAX_NUM_FORMS" value="1000" id="id_item-__prefix0__-detail-MAX_NUM_FORMS">
+                    <li class="list-group-item" style="display: flex;">
+                        <input type="hidden" id="id_item-__prefix0__-detail-0-id" name="item-__prefix0__-detail-0-id" value="">
+                        <input type="hidden" id="id_item-__prefix0__-detail-0-use_yn" name="item-__prefix0__-detail-0-use_yn" value="Y">
+                        <input type="text" id="id_item-__prefix0__-detail-0-content" name="item-__prefix0__-detail-0-content" class="form-control item-content" placeholder="예: 개인">
+                        <button type="button" id="id_item-__prefix0__-detail-0-DELETE" class="deleteItemDetail btn btn-danger btn-sm">삭제</button>
+                    </li>
                 </ul>
             </div>
             <button type="button" class="btn btn-secondary mb-3 addItemDetail" id="addItemDetail__prefix0__">+ 할일 추가</button>
@@ -276,7 +282,7 @@
 <li id="empty-form-__prefix0__-detail" class="list-group-item" style="display:none;">
     <input type="hidden" id="id_item-__prefix0__-detail-__prefix1__-id" name="item-__prefix0__-detail-__prefix1__-id" value="">
     <input type="hidden" id="id_item-__prefix0__-detail-__prefix1__-use_yn" name="item-__prefix0__-detail-__prefix1__-use_yn" value="Y">
-    <input type="text" id="id_item-__prefix0__-detail-__prefix1__-content" name="item-__prefix0__-detail-__prefix1__-content" class="form-control" placeholder="예: 개인">
+    <input type="text" id="id_item-__prefix0__-detail-__prefix1__-content" name="item-__prefix0__-detail-__prefix1__-content" class="form-control item-content" placeholder="예: 개인">
     <button type="button" id="id_item-__prefix0__-detail-__prefix1__-DELETE" class="deleteItemDetail btn btn-danger btn-sm">삭제</button>
 </li>
 
@@ -289,7 +295,7 @@
                 <input type="hidden" id="id_item-__prefix0__-detail-__prefix1__-time-__prefix2__-id" name="item-__prefix0__-detail-__prefix1__-time-__prefix2__-id" value="">
                 <input type="hidden" id="id_item-__prefix0__-detail-__prefix1__-time-__prefix2__-use_yn" name="item-__prefix0__-detail-__prefix1__-time-__prefix2__-use_yn" value="Y">
             </th>
-            <td></td>
+            <td id="item-__prefix0__-content-__prefix1__-detail"></td>
             <td>
                 <div class="input-group mb-3">
                     <select id="id_item-__prefix0__-detail-__prefix1__-time-__prefix2__-start_day." name="item-__prefix0__-detail-__prefix1__-time-__prefix2__-start_day" class="form-select" >
@@ -338,10 +344,51 @@
                 </tr>
             </thead>
             <tbody>
-                <input type="hidden" name="item-__prefix0__-detail-__prefix1__-time-TOTAL_FORMS" value="0" id="id_item-__prefix0__-detail-__prefix1__-time-TOTAL_FORMS">
+                <input type="hidden" name="item-__prefix0__-detail-__prefix1__-time-TOTAL_FORMS" value="1" id="id_item-__prefix0__-detail-__prefix1__-time-TOTAL_FORMS">
                 <input type="hidden" name="item-__prefix0__-detail-__prefix1__-time-INITIAL_FORMS" value="0" id="id_item-__prefix0__-detail-__prefix1__-time-INITIAL_FORMS">
                 <input type="hidden" name="item-__prefix0__-detail-__prefix1__-time-MIN_NUM_FORMS" value="0" id="id_item-__prefix0__-detail-__prefix1__-time-MIN_NUM_FORMS">
                 <input type="hidden" name="item-__prefix0__-detail-__prefix1__-time-MAX_NUM_FORMS" value="1000" id="id_item-__prefix0__-detail-__prefix1__-time-MAX_NUM_FORMS">
+                <tr>
+                    <th scope="row">
+                        <input type="hidden" id="id_item-__prefix0__-detail-__prefix1__-time-0-id" name="item-__prefix0__-detail-__prefix1__-time-0-id" value="">
+                        <input type="hidden" id="id_item-__prefix0__-detail-__prefix1__-time-0-use_yn" name="item-__prefix0__-detail-__prefix1__-time-0-use_yn" value="Y">
+                        __prefix0__
+                    </th>
+                    <td id="item-__prefix0__-content-0-detail"></td>
+                    <td>
+                        <div class="input-group mb-3">
+                            <select id="id_item-__prefix0__-detail-__prefix1__-time-0-start_day" name="item-__prefix0__-detail-__prefix1__-time-0-start_day" class="form-select">
+                                <option value="">요일선택</option>
+                                <option value="MON">월요일</option>
+                                <option value="TUE">화요일</option>
+                                <option value="WED">수요일</option>
+                                <option value="THU">목요일</option>
+                                <option value="FRI">금요일</option>
+                                <option value="SAT">토요일</option>
+                                <option value="SUN">일요일</option>
+                            </select>
+                            <input type="time" id="id_item-__prefix0__-detail-__prefix1__-time-0-start_time" name="item-__prefix0__-detail-__prefix1__-time-0-start_time" class="form-control" value="">
+                        </div>
+                    </td>
+                    <td>
+                        <div class="input-group mb-3">
+                            <select id="id_item-__prefix0__-detail-__prefix1__-time-0-end_day" name="item-__prefix0__-detail-__prefix1__-time-0-end_day" class="form-select">
+                                <option value="">요일선택</option>
+                                <option value="MON">월요일</option>
+                                <option value="TUE">화요일</option>
+                                <option value="WED">수요일</option>
+                                <option value="THU">목요일</option>
+                                <option value="FRI">금요일</option>
+                                <option value="SAT">토요일</option>
+                                <option value="SUN">일요일</option>
+                            </select>
+                            <input type="time" id="id_item-__prefix0__-detail-__prefix1__-time-0-end_time" name="item-__prefix0__-detail-__prefix1__-time-0-end_time" class="form-control" value="">
+                        </div>
+                    </td>
+                    <td>
+                        <button type="button" id="id_item-__prefix0__-detail-__prefix1__-time-0-DELETE" class="deleteItemDetailTime btn btn-danger btn-sm">삭제</button>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -423,10 +470,19 @@
             });
             const itemContent = newLiRow.querySelector(".item-content");
             itemContent.addEventListener("input", function(event) {
-                const match = event.currentTarget.id.match(/^id_item-(\d+)-content$/);
-                if (match) {
-                    const index = Number(match[1]);
+                const match1 = event.currentTarget.id.match(/^id_item-(\d+)-content$/);
+                if (match1 && match1.length === 2) {
+                    const index = Number(match1[1]);
                     let itemContent = document.getElementById(`item-${index}-content`);
+                    if (itemContent) {
+                        itemContent.textContent = event.currentTarget.value;
+                    }
+                }
+                const match2 = event.currentTarget.id.match(/^id_item-(\d+)-detail-(\d+)-content$/);
+                if (match2 && match2.length === 3) {
+                    const index = Number(match2[1]);
+                    const detailIndex = Number(match2[2]);
+                    let itemContent = document.getElementById(`item-${index}-content-${detailIndex}-detail`);
                     if (itemContent) {
                         itemContent.textContent = event.currentTarget.value;
                     }
@@ -494,9 +550,114 @@
 
                 // 총 폼 개수 증가
                 totalForms.value = formNum + 1;
+
+                // 일정 추가
+                const formContainer2__prefix0__ = document.querySelector(`#form-container2-${index}`);
+
+                let emptyFormDetailTime = document.getElementById("empty-form-detail-time");
+                const newDetailTimeRow = emptyFormDetailTime.cloneNode(true); // li 전체 복제
+                newDetailTimeRow.removeAttribute("id");             // id 속성 제거
+                let newDetailTimeForm = newDetailTimeRow.outerHTML.replace(/__prefix0__/g, index).replace(/__prefix1__/g, formNum);
+
+                // 새로운 행 DOM으로 삽입
+                const tempDetailTime = document.createElement("div");
+                tempDetailTime.innerHTML = newDetailTimeForm;
+                const newDivTableRow = tempDetailTime.querySelector("div");
+                newDivTableRow.style.display = ""; // 보이게
+                const addItemDetailTime = newDivTableRow.querySelector(".addItemDetailTime");
+
+                addItemDetailTime.addEventListener("click", function(event) {
+                    const match = event.currentTarget.id.match(/(\d+)-(\d+)$/);
+                    if (match && match.length == 3) {
+                        const itemIndex = parseInt(match[1]);
+                        const detailIndex = parseInt(match[2]);
+
+                        const formContainer = document.querySelector(`#form-container2-${itemIndex}-${detailIndex} tbody`);
+                        const totalForms = document.getElementById(`id_item-${itemIndex}-detail-${detailIndex}-time-TOTAL_FORMS`);
+
+                        let formNum = parseInt(totalForms.value);
+                        let emptyForm = document.getElementById(`empty-form-__prefix0__-detail-__prefix1__-time-__prefix2__`);
+                        const newRow = emptyForm.cloneNode(true); // li 전체 복제
+                        newRow.removeAttribute("id");             // id 속성 제거
+                        let newForm = newRow.outerHTML.replace(/__prefix0__/g, itemIndex).replace(/__prefix1__/g, detailIndex).replace(/__prefix2__/g, formNum);
+
+                        // 새로운 행 DOM으로 삽입
+                        const temp = document.createElement("tbody");
+                        temp.innerHTML = newForm;
+                        const newLiRow = temp.querySelector("tr");
+                        newLiRow.style.display = ""; // 보이게
+                        const deleteItem = newLiRow.querySelector(".deleteItem");
+                        deleteItem.addEventListener("click", function(event) {
+                            event.currentTarget.closest("tr").remove();
+
+                            let currentFormNum = parseInt(totalForms.value);
+                            totalForms.value = currentFormNum - 1;
+                        });
+
+                        formContainer.appendChild(newLiRow);
+
+                        // 총 폼 개수 증가
+                        totalForms.value = formNum + 1;
+                    }
+                });
+
+                formContainer2__prefix0__.appendChild(newDivTableRow);
             });
 
             formContainer1.appendChild(newDivRow);
+
+            const formContainer2__prefix0__ = document.createElement("div");
+            formContainer2__prefix0__.setAttribute("id", `form-container2-${formNum}`);             // id 속성 추가
+            formContainer2.appendChild(formContainer2__prefix0__);
+
+            let emptyFormDetailTime = document.getElementById("empty-form-detail-time");
+            const newDetailTimeRow = emptyFormDetailTime.cloneNode(true); // li 전체 복제
+            newDetailTimeRow.removeAttribute("id");             // id 속성 제거
+            let newDetailTimeForm = newDetailTimeRow.outerHTML.replace(/__prefix0__/g, formNum).replace(/__prefix1__/g, 0);
+
+            // 새로운 행 DOM으로 삽입
+            const tempDetailTime = document.createElement("div");
+            tempDetailTime.innerHTML = newDetailTimeForm;
+            const newDivTableRow = tempDetailTime.querySelector("div");
+            newDivTableRow.style.display = ""; // 보이게
+            const addItemDetailTime = newDivTableRow.querySelector(".addItemDetailTime");
+
+            addItemDetailTime.addEventListener("click", function(event) {
+                const match = event.currentTarget.id.match(/(\d+)-(\d+)$/);
+                if (match && match.length == 3) {
+                    const itemIndex = parseInt(match[1]);
+                    const detailIndex = parseInt(match[2]);
+
+                    const formContainer = document.querySelector(`#form-container2-${itemIndex}-${detailIndex} tbody`);
+                    const totalForms = document.getElementById(`id_item-${itemIndex}-detail-${detailIndex}-time-TOTAL_FORMS`);
+
+                    let formNum = parseInt(totalForms.value);
+                    let emptyForm = document.getElementById(`empty-form-__prefix0__-detail-__prefix1__-time-__prefix2__`);
+                    const newRow = emptyForm.cloneNode(true); // li 전체 복제
+                    newRow.removeAttribute("id");             // id 속성 제거
+                    let newForm = newRow.outerHTML.replace(/__prefix0__/g, itemIndex).replace(/__prefix1__/g, detailIndex).replace(/__prefix2__/g, formNum);
+
+                    // 새로운 행 DOM으로 삽입
+                    const temp = document.createElement("tbody");
+                    temp.innerHTML = newForm;
+                    const newLiRow = temp.querySelector("tr");
+                    newLiRow.style.display = ""; // 보이게
+                    const deleteItem = newLiRow.querySelector(".deleteItem");
+                    deleteItem.addEventListener("click", function(event) {
+                        event.currentTarget.closest("tr").remove();
+
+                        let currentFormNum = parseInt(totalForms.value);
+                        totalForms.value = currentFormNum - 1;
+                    });
+
+                    formContainer.appendChild(newLiRow);
+
+                    // 총 폼 개수 증가
+                    totalForms.value = formNum + 1;
+                }
+            });
+
+            formContainer2__prefix0__.appendChild(newDivTableRow);
         });
 
         const deleteItem_elements = document.getElementsByClassName("deleteItem");
@@ -624,10 +785,19 @@
         const itemContent_elements = document.querySelectorAll(".item-content");
         Array.from(itemContent_elements).forEach(function(element){
             element.addEventListener('input', function(event){
-                const match = event.currentTarget.id.match(/^id_item-(\d+)-content$/);
-                if (match) {
-                    const index = Number(match[1]);
+                const match1 = event.currentTarget.id.match(/^id_item-(\d+)-content$/);
+                if (match1 && match1.length === 2) {
+                    const index = Number(match1[1]);
                     let itemContent = document.getElementById(`item-${index}-content`);
+                    if (itemContent) {
+                        itemContent.textContent = event.currentTarget.value;
+                    }
+                }
+                const match2 = event.currentTarget.id.match(/^id_item-(\d+)-detail-(\d+)-content$/);
+                if (match2 && match2.length === 3) {
+                    const index = Number(match2[1]);
+                    const detailIndex = Number(match2[2]);
+                    let itemContent = document.getElementById(`item-${index}-content-${detailIndex}-detail`);
                     if (itemContent) {
                         itemContent.textContent = event.currentTarget.value;
                     }

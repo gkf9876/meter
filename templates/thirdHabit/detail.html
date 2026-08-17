@@ -102,7 +102,6 @@
                                                         <th scope="col">할일</th>
                                                         <th scope="col">시작시간</th>
                                                         <th scope="col">종료시간</th>
-                                                        <th scope="col"></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -112,17 +111,19 @@
                                                             {% if detailTime_formset|length > 0 %}
                                                                 {% for detailTime_form in detailTime_formset %}
                                                                     <tr>
-                                                                        <th scope="row">{{ item_index }}</th>
-                                                                        <td>{{ detail_form.content.value|default_if_none:'' }}</td>
+                                                                        {% if forloop.counter0 == 0 %}
+                                                                            <th scope="row" rowspan="{{ detailTime_formset|length }}">{{ item_index }}</th>
+                                                                            <td rowspan="{{ detailTime_formset|length }}">{{ detail_form.content.value|default_if_none:'' }}</td>
+                                                                        {% endif %}
                                                                         <td>
                                                                             <div class="input-group mb-3">
-                                                                                {% if detailTime_form.end_day.value == "MON" %}월요일{% endif %}
-                                                                                {% if detailTime_form.end_day.value == "TUE" %}화요일{% endif %}
-                                                                                {% if detailTime_form.end_day.value == "WED" %}수요일{% endif %}
-                                                                                {% if detailTime_form.end_day.value == "THU" %}목요일{% endif %}
-                                                                                {% if detailTime_form.end_day.value == "FRI" %}금요일{% endif %}
-                                                                                {% if detailTime_form.end_day.value == "SAT" %}토요일{% endif %}
-                                                                                {% if detailTime_form.end_day.value == "SUN" %}일요일{% endif %}
+                                                                                {% if detailTime_form.start_day.value == "MON" %}월요일{% endif %}
+                                                                                {% if detailTime_form.start_day.value == "TUE" %}화요일{% endif %}
+                                                                                {% if detailTime_form.start_day.value == "WED" %}수요일{% endif %}
+                                                                                {% if detailTime_form.start_day.value == "THU" %}목요일{% endif %}
+                                                                                {% if detailTime_form.start_day.value == "FRI" %}금요일{% endif %}
+                                                                                {% if detailTime_form.start_day.value == "SAT" %}토요일{% endif %}
+                                                                                {% if detailTime_form.start_day.value == "SUN" %}일요일{% endif %}
                                                                                 {{ detailTime_form.start_time.value|smart_time }}
                                                                             </div>
                                                                         </td>
