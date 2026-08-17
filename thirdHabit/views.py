@@ -38,8 +38,6 @@ def index(request):
 def detail(request, thirdHabit_id):
     thirdHabit = get_object_or_404(ThirdHabit, Q(author_id=request.user.id) | Q(notice_yn=True), pk=thirdHabit_id, use_yn='Y')
     ThirdHabitFormSet = modelformset_factory(ThirdHabitItem, form=ThirdHabitItemForm, extra=0, can_delete=True)
-    ThirdHabitItemDetailFormSet = modelformset_factory(ThirdHabitItemDetail, form=ThirdHabitItemDetailForm, extra=0, can_delete=True)
-    ThirdHabitItemDetailTimeFormSet = modelformset_factory(ThirdHabitItemDetailTime, form=ThirdHabitItemDetailTimeForm, extra=0, can_delete=True)
     if request.user != thirdHabit.author:
         thirdHabit.viewcount.add(request.user)
     formset = ThirdHabitFormSet(prefix='item', queryset=thirdHabit.item.filter(use_yn='Y').order_by('create_date'))
@@ -47,16 +45,26 @@ def detail(request, thirdHabit_id):
     detailTime_formsets = {}
     for index, item_form in enumerate(formset):
         item = item_form.instance
+        if item.pk:
+            detail_queryset = item.detailItem.filter(use_yn='Y').order_by('create_date')
+        else:
+            detail_queryset = ThirdHabitItemDetail.objects.none()
+        ThirdHabitItemDetailFormSet = modelformset_factory(ThirdHabitItemDetail, form=ThirdHabitItemDetailForm, extra=0, can_delete=True)
         detail_formsets[index] = ThirdHabitItemDetailFormSet(
             prefix=f'item-{index}-detail',
-            queryset=item.detailItem.filter(use_yn='Y').order_by('create_date')
+            queryset=detail_queryset
         )
         detailTime_formsets[index] = {}
         for detailIndex, detailItem_form in enumerate(detail_formsets[index]):
             detailItem = detailItem_form.instance
+            if detailItem.pk:
+                detailTime_queryset = detailItem.detailTimeItem.filter(use_yn='Y').order_by('create_date')
+            else:
+                detailTime_queryset = ThirdHabitItemDetailTime.objects.none()
+            ThirdHabitItemDetailTimeFormSet = modelformset_factory(ThirdHabitItemDetailTime, form=ThirdHabitItemDetailTimeForm, extra=0 if detailTime_queryset.exists() else 1, can_delete=True)
             detailTime_formsets[index][detailIndex] = ThirdHabitItemDetailTimeFormSet(
                 prefix=f'item-{index}-detail-{detailIndex}-time',
-                queryset=detailItem.detailTimeItem.filter(use_yn='Y').order_by('create_date')
+                queryset=detailTime_queryset
             )
     context = {'thirdHabit': thirdHabit, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets}
     return render(request, 'thirdHabit/detail.html', context)
@@ -64,8 +72,6 @@ def detail(request, thirdHabit_id):
 @login_required(login_url='common:login')
 def create(request):
     ThirdHabitFormSet = modelformset_factory(ThirdHabitItem, form=ThirdHabitItemForm, extra=0, can_delete=True)
-    ThirdHabitItemDetailFormSet = modelformset_factory(ThirdHabitItemDetail, form=ThirdHabitItemDetailForm, extra=0, can_delete=True)
-    ThirdHabitItemDetailTimeFormSet = modelformset_factory(ThirdHabitItemDetailTime, form=ThirdHabitItemDetailTimeForm, extra=0, can_delete=True)
     if request.method == 'POST':
         form = ThirdHabitForm(request.POST)
         formset = ThirdHabitFormSet(request.POST, prefix='item', queryset=ThirdHabitItem.objects.none())
@@ -74,6 +80,7 @@ def create(request):
         detailTime_formsets = {}
         detailTime_valid = True
         for index, item_form in enumerate(formset):
+            ThirdHabitItemDetailFormSet = modelformset_factory(ThirdHabitItemDetail, form=ThirdHabitItemDetailForm, extra=1, can_delete=True)
             detail_formsets[index] = ThirdHabitItemDetailFormSet(
                 request.POST,
                 prefix=f'item-{index}-detail',
@@ -83,6 +90,7 @@ def create(request):
                 detail_valid = False
             detailTime_formsets[index] = {}
             for detailIndex, detailItem_form in enumerate(detail_formsets[index]):
+                ThirdHabitItemDetailTimeFormSet = modelformset_factory(ThirdHabitItemDetailTime, form=ThirdHabitItemDetailTimeForm, extra=1, can_delete=True)
                 detailTime_formsets[index][detailIndex] = ThirdHabitItemDetailTimeFormSet(
                     request.POST,
                     prefix=f'item-{index}-detail-{detailIndex}-time',
@@ -133,12 +141,14 @@ def create(request):
         detail_formsets = {}
         detailTime_formsets = {}
         for index, item_form in enumerate(formset):
+            ThirdHabitItemDetailFormSet = modelformset_factory(ThirdHabitItemDetail, form=ThirdHabitItemDetailForm, extra=1, can_delete=True)
             detail_formsets[index] = ThirdHabitItemDetailFormSet(
                 prefix=f'item-{index}-detail',
                 queryset=ThirdHabitItemDetail.objects.none()
             )
             detailTime_formsets[index] = {}
             for detailIndex, detailItem_form in enumerate(detail_formsets[index]):
+                ThirdHabitItemDetailTimeFormSet = modelformset_factory(ThirdHabitItemDetailTime, form=ThirdHabitItemDetailTimeForm, extra=1, can_delete=True)
                 detailTime_formsets[index][detailIndex] = ThirdHabitItemDetailTimeFormSet(
                     prefix=f'item-{index}-detail-{detailIndex}-time',
                     queryset=ThirdHabitItemDetailTime.objects.none()
@@ -149,16 +159,15 @@ def create(request):
 @login_required(login_url='common:login')
 def modify(request, thirdHabit_id):
     thirdHabit = get_object_or_404(ThirdHabit, pk=thirdHabit_id)
-    ThirdHabitItemFormSet = modelformset_factory(ThirdHabitItem, form=ThirdHabitItemForm, extra=0, can_delete=True)
-    ThirdHabitItemDetailFormSet = modelformset_factory(ThirdHabitItemDetail, form=ThirdHabitItemDetailForm, extra=0, can_delete=True)
-    ThirdHabitItemDetailTimeFormSet = modelformset_factory(ThirdHabitItemDetailTime, form=ThirdHabitItemDetailTimeForm, extra=0, can_delete=True)
     thirdHabit_content = thirdHabit.content
     if request.user != thirdHabit.author:
         messages.error(request, '수정권한이 없습니다')
         return redirect('thirdHabit:detail', thirdHabit_id=thirdHabit.id)
     if request.method == "POST":
         form = ThirdHabitForm(request.POST, instance=thirdHabit)
-        formset = ThirdHabitItemFormSet(request.POST, prefix='item', queryset=thirdHabit.item.filter(use_yn='Y').order_by('create_date'))
+        item_queryset = thirdHabit.item.filter(use_yn='Y').order_by('create_date')
+        ThirdHabitItemFormSet = modelformset_factory(ThirdHabitItem, form=ThirdHabitItemForm, extra=0 if item_queryset.exists() else 1, can_delete=True)
+        formset = ThirdHabitItemFormSet(request.POST, prefix='item', queryset=item_queryset)
         detail_formsets = {}
         detail_valid = True
         detailTime_formsets = {}
@@ -169,6 +178,7 @@ def modify(request, thirdHabit_id):
                 detail_queryset = item.detailItem.filter(use_yn='Y').order_by('create_date')
             else:
                 detail_queryset = ThirdHabitItemDetail.objects.none()
+            ThirdHabitItemDetailFormSet = modelformset_factory(ThirdHabitItemDetail, form=ThirdHabitItemDetailForm, extra=0 if detail_queryset.exists() else 1, can_delete=True)
             detail_formsets[index] = ThirdHabitItemDetailFormSet(
                 request.POST,
                 prefix=f'item-{index}-detail',
@@ -180,13 +190,14 @@ def modify(request, thirdHabit_id):
             for detailIndex, detailItem_form in enumerate(detail_formsets[index]):
                 detailItem = detailItem_form.instance
                 if detailItem.pk:
-                    detail_queryset = detailItem.detailTimeItem.filter(use_yn='Y').order_by('create_date')
+                    detailTime_queryset = detailItem.detailTimeItem.filter(use_yn='Y').order_by('create_date')
                 else:
-                    detail_queryset = ThirdHabitItemDetailTime.objects.none()
+                    detailTime_queryset = ThirdHabitItemDetailTime.objects.none()
+                ThirdHabitItemDetailTimeFormSet = modelformset_factory(ThirdHabitItemDetailTime, form=ThirdHabitItemDetailTimeForm, extra=0 if detailTime_queryset.exists() else 1, can_delete=True)
                 detailTime_formsets[index][detailIndex] = ThirdHabitItemDetailTimeFormSet(
                     request.POST,
                     prefix=f'item-{index}-detail-{detailIndex}-time',
-                    queryset=detail_queryset
+                    queryset=detailTime_queryset
                 )
                 if not detail_formsets[index][detailIndex].is_valid():
                     detailTime_valid = False
@@ -244,21 +255,33 @@ def modify(request, thirdHabit_id):
             return redirect('thirdHabit:detail', thirdHabit_id=thirdHabit.id)
     else:
         form = ThirdHabitForm(instance=thirdHabit)
-        formset = ThirdHabitItemFormSet(prefix='item', queryset=thirdHabit.item.filter(use_yn='Y').order_by('create_date'))
+        item_queryset = thirdHabit.item.filter(use_yn='Y').order_by('create_date')
+        ThirdHabitItemFormSet = modelformset_factory(ThirdHabitItem, form=ThirdHabitItemForm, extra=0 if item_queryset.exists() else 1, can_delete=True)
+        formset = ThirdHabitItemFormSet(prefix='item', queryset=item_queryset)
         detail_formsets = {}
         detailTime_formsets = {}
         for index, item_form in enumerate(formset):
             item = item_form.instance
+            if item.pk:
+                detail_queryset = item.detailItem.filter(use_yn='Y').order_by('create_date')
+            else:
+                detail_queryset = ThirdHabitItemDetail.objects.none()
+            ThirdHabitItemDetailFormSet = modelformset_factory(ThirdHabitItemDetail, form=ThirdHabitItemDetailForm, extra=0 if detail_queryset.exists() else 1, can_delete=True)
             detail_formsets[index] = ThirdHabitItemDetailFormSet(
                 prefix=f'item-{index}-detail',
-                queryset=item.detailItem.filter(use_yn='Y').order_by('create_date')
+                queryset=detail_queryset
             )
             detailTime_formsets[index] = {}
             for detailIndex, detailItem_form in enumerate(detail_formsets[index]):
                 detailItem = detailItem_form.instance
+                if detailItem.pk:
+                    detailTime_queryset = detailItem.detailTimeItem.filter(use_yn='Y').order_by('create_date')
+                else:
+                    detailTime_queryset = ThirdHabitItemDetailTime.objects.none()
+                ThirdHabitItemDetailTimeFormSet = modelformset_factory(ThirdHabitItemDetailTime, form=ThirdHabitItemDetailTimeForm, extra=0 if detailTime_queryset.exists() else 1, can_delete=True)
                 detailTime_formsets[index][detailIndex] = ThirdHabitItemDetailTimeFormSet(
                     prefix=f'item-{index}-detail-{detailIndex}-time',
-                    queryset=detailItem.detailTimeItem.filter(use_yn='Y').order_by('create_date')
+                    queryset=detailTime_queryset
                 )
     context = {'form': form, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets}
     return render(request, 'thirdHabit/form.html', context)

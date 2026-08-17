@@ -75,7 +75,7 @@
                 {% for form in formset %}
                     {% with item=form.instance %}
                     {% with item_index=forloop.counter0 %}
-                    <div id="item-container-{{ item_index }}" class="container">
+                    <div id="item-container1-{{ item_index }}" class="container">
                         <div class="row mb-3">
                             <div class="col">
                                 <div class="card" style="width: 18rem;height: 10rem;">
@@ -116,28 +116,27 @@
                 {% for form in formset %}
                     {% with item=form.instance %}
                     {% with item_index=forloop.counter0 %}
-                    {% with detail_formset=detail_formsets|get_item:item_index %}
-                    {% with detailItem_index=forloop.counter0 %}
-                    {% for detail_form in detail_formset %}
-                        {% with detailItem=detail_form.instance %}
-                        {% with detailItem_index=forloop.counter0 %}
-                            <div class="card-body">
-                                <div id="form-container2-{{ item_index }}-{{ detailItem_index }}">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">#</th>
-                                                <th scope="col">할일</th>
-                                                <th scope="col">시작시간</th>
-                                                <th scope="col">종료시간</th>
-                                                <th scope="col"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% with detailTime_formsets_by_item=detailTime_formsets|get_item:item_index %}
-                                                {% with detailTime_formset=detailTime_formsets_by_item|get_item:detailItem_index %}
-                                                    {{ detailTime_formset.management_form }}
-                                                    {% if detailTime_formset|length > 0 %}
+                    <div id="form-container2-{{ item_index }}">
+                        {% with detail_formset=detail_formsets|get_item:item_index %}
+                        {% for detail_form in detail_formset %}
+                            {% with detailItem=detail_form.instance %}
+                            {% with detailItem_index=forloop.counter0 %}
+                                <div class="card-body">
+                                    <div id="form-container2-{{ item_index }}-{{ detailItem_index }}">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">#</th>
+                                                    <th scope="col">할일</th>
+                                                    <th scope="col">시작시간</th>
+                                                    <th scope="col">종료시간</th>
+                                                    <th scope="col"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% with detailTime_formsets_by_item=detailTime_formsets|get_item:item_index %}
+                                                    {% with detailTime_formset=detailTime_formsets_by_item|get_item:detailItem_index %}
+                                                        {{ detailTime_formset.management_form }}
                                                         {% for detailTime_form in detailTime_formset %}
                                                             <tr>
                                                                 <th scope="row">
@@ -149,6 +148,7 @@
                                                                 <td>
                                                                     <div class="input-group mb-3">
                                                                         <select id="{{ detailTime_form.start_day.id_for_label }}" name="{{ detailTime_form.start_day.html_name }}" class="form-select" >
+                                                                            <option value="" {% if detailTime_form.start_day.value == "" %}selected{% endif %}>요일선택</option>
                                                                             <option value="MON" {% if detailTime_form.start_day.value == "MON" %}selected{% endif %}>월요일</option>
                                                                             <option value="TUE" {% if detailTime_form.start_day.value == "TUE" %}selected{% endif %}>화요일</option>
                                                                             <option value="WED" {% if detailTime_form.start_day.value == "WED" %}selected{% endif %}>수요일</option>
@@ -163,6 +163,7 @@
                                                                 <td>
                                                                     <div class="input-group mb-3">
                                                                         <select id="{{ detailTime_form.end_day.id_for_label }}" name="{{ detailTime_form.end_day.html_name }}" class="form-select" >
+                                                                            <option value="" {% if detailTime_form.start_day.value == "" %}selected{% endif %}>요일선택</option>
                                                                             <option value="MON" {% if detailTime_form.end_day.value == "MON" %}selected{% endif %}>월요일</option>
                                                                             <option value="TUE" {% if detailTime_form.end_day.value == "TUE" %}selected{% endif %}>화요일</option>
                                                                             <option value="WED" {% if detailTime_form.end_day.value == "WED" %}selected{% endif %}>수요일</option>
@@ -175,23 +176,22 @@
                                                                     </div>
                                                                 </td>
                                                                 <td>
-                                                                    <button type="button" id="id_item-{{ item_index }}-detail-{{ detailItem_index }}-time-DELETE" class="deleteItemDetailTime btn btn-danger btn-sm">삭제</button>
+                                                                    <button type="button" id="id_item-{{ item_index }}-detail-{{ detailItem_index }}-time-{{ forloop.counter0 }}-DELETE" class="deleteItemDetailTime btn btn-danger btn-sm">삭제</button>
                                                                 </td>
                                                             </tr>
                                                         {% endfor %}
-                                                    {% endif %}
+                                                    {% endwith %}
                                                 {% endwith %}
-                                            {% endwith %}
-                                        </tbody>
-                                    </table>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <button type="button" class="btn btn-secondary mb-3 addItemDetailTime" id="addItemDetailTime{{ item_index }}-{{ detailItem_index }}">+ 일정 추가</button>
                                 </div>
-                                <button type="button" class="btn btn-secondary mb-3 addItemDetailTime" id="addItemDetailTime{{ item_index }}-{{ detailItem_index }}">+ 일정 추가</button>
-                            </div>
+                            {% endwith %}
+                            {% endwith %}
+                        {% endfor %}
                         {% endwith %}
-                        {% endwith %}
-                    {% endfor %}
-                    {% endwith %}
-                    {% endwith %}
+                    </div>
                     {% endwith %}
                     {% endwith %}
                 {% endfor %}
@@ -324,6 +324,29 @@
         </tr>
     </tbody>
 </table>
+
+<div id="empty-form-detail-time" class="card-body" style="display:none;">
+    <div id="form-container2-__prefix0__-__prefix1__">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">할일</th>
+                    <th scope="col">시작시간</th>
+                    <th scope="col">종료시간</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <input type="hidden" name="item-__prefix0__-detail-__prefix1__-time-TOTAL_FORMS" value="0" id="id_item-__prefix0__-detail-__prefix1__-time-TOTAL_FORMS">
+                <input type="hidden" name="item-__prefix0__-detail-__prefix1__-time-INITIAL_FORMS" value="0" id="id_item-__prefix0__-detail-__prefix1__-time-INITIAL_FORMS">
+                <input type="hidden" name="item-__prefix0__-detail-__prefix1__-time-MIN_NUM_FORMS" value="0" id="id_item-__prefix0__-detail-__prefix1__-time-MIN_NUM_FORMS">
+                <input type="hidden" name="item-__prefix0__-detail-__prefix1__-time-MAX_NUM_FORMS" value="1000" id="id_item-__prefix0__-detail-__prefix1__-time-MAX_NUM_FORMS">
+            </tbody>
+        </table>
+    </div>
+    <button type="button" class="btn btn-secondary mb-3 addItemDetailTime" id="addItemDetailTime__prefix0__-__prefix1__">+ 일정 추가</button>
+</div>
 {% endblock %}
 {% block script %}
     <script>
@@ -368,6 +391,7 @@
         const totalForms0 = document.getElementById("id_item-TOTAL_FORMS");
 
         const formContainer1 = document.querySelector("#form-container1");
+        const formContainer2 = document.querySelector("#form-container2");
 
         addItemBtn0.addEventListener("click", function() {
             let formNum = parseInt(totalForms0.value);
@@ -390,7 +414,7 @@
                 if (match) {
                     const index = Number(match[1]);
 
-                    let itemContainer = document.getElementById(`item-container-${index}`);
+                    let itemContainer = document.getElementById(`item-container1-${index}`);
                     itemContainer.remove();
 
                     let currentFormNum = parseInt(totalForms0.value);
@@ -418,7 +442,7 @@
             let emptyFormDetail = document.getElementById("empty-form-detail");
             const newDetailRow = emptyFormDetail.cloneNode(true); // li 전체 복제
             newDetailRow.removeAttribute("id");             // id 속성 제거
-            newDetailRow.setAttribute("id", "item-container-__prefix0__");             // id 속성 추가
+            newDetailRow.setAttribute("id", "item-container1-__prefix0__");             // id 속성 추가
             let newDetailForm = newDetailRow.outerHTML.replace(/__prefix0__/g, formNum);
 
             // 새로운 행 DOM으로 삽입
@@ -524,6 +548,58 @@
 
                 // 총 폼 개수 증가
                 totalForms.value = formNum + 1;
+
+                // 일정 추가
+                const formContainer2__prefix0__ = document.querySelector(`#form-container2-${index}`);
+
+                let emptyFormDetailTime = document.getElementById("empty-form-detail-time");
+                const newDetailTimeRow = emptyFormDetailTime.cloneNode(true); // li 전체 복제
+                newDetailTimeRow.removeAttribute("id");             // id 속성 제거
+                let newDetailTimeForm = newDetailTimeRow.outerHTML.replace(/__prefix0__/g, index).replace(/__prefix1__/g, formNum);
+
+                // 새로운 행 DOM으로 삽입
+                const tempDetailTime = document.createElement("div");
+                tempDetailTime.innerHTML = newDetailTimeForm;
+                const newDivTableRow = tempDetailTime.querySelector("div");
+                newDivTableRow.style.display = ""; // 보이게
+                const addItemDetailTime = newDivTableRow.querySelector(".addItemDetailTime");
+
+                addItemDetailTime.addEventListener("click", function(event) {
+                    const match = event.currentTarget.id.match(/(\d+)-(\d+)$/);
+                    if (match && match.length == 3) {
+                        const itemIndex = parseInt(match[1]);
+                        const detailIndex = parseInt(match[2]);
+
+                        const formContainer = document.querySelector(`#form-container2-${itemIndex}-${detailIndex} tbody`);
+                        const totalForms = document.getElementById(`id_item-${itemIndex}-detail-${detailIndex}-time-TOTAL_FORMS`);
+
+                        let formNum = parseInt(totalForms.value);
+                        let emptyForm = document.getElementById(`empty-form-__prefix0__-detail-__prefix1__-time-__prefix2__`);
+                        const newRow = emptyForm.cloneNode(true); // li 전체 복제
+                        newRow.removeAttribute("id");             // id 속성 제거
+                        let newForm = newRow.outerHTML.replace(/__prefix0__/g, itemIndex).replace(/__prefix1__/g, detailIndex).replace(/__prefix2__/g, formNum);
+
+                        // 새로운 행 DOM으로 삽입
+                        const temp = document.createElement("tbody");
+                        temp.innerHTML = newForm;
+                        const newLiRow = temp.querySelector("tr");
+                        newLiRow.style.display = ""; // 보이게
+                        const deleteItem = newLiRow.querySelector(".deleteItem");
+                        deleteItem.addEventListener("click", function(event) {
+                            event.currentTarget.closest("tr").remove();
+
+                            let currentFormNum = parseInt(totalForms.value);
+                            totalForms.value = currentFormNum - 1;
+                        });
+
+                        formContainer.appendChild(newLiRow);
+
+                        // 총 폼 개수 증가
+                        totalForms.value = formNum + 1;
+                    }
+                });
+
+                formContainer2__prefix0__.appendChild(newDivTableRow);
             });
         });
 
