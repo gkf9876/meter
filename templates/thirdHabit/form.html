@@ -121,8 +121,8 @@
                         {% for detail_form in detail_formset %}
                             {% with detailItem=detail_form.instance %}
                             {% with detailItem_index=forloop.counter0 %}
-                                <div class="card-body">
-                                    <div id="form-container2-{{ item_index }}-{{ detailItem_index }}">
+                                <div id="form-container2-{{ item_index }}-{{ detailItem_index }}" class="card-body">
+                                    <div>
                                         <table class="table">
                                             <thead>
                                                 <tr>
@@ -332,7 +332,7 @@
 </table>
 
 <div id="empty-form-detail-time" class="card-body" style="display:none;">
-    <div id="form-container2-__prefix0__-__prefix1__">
+    <div>
         <table class="table">
             <thead>
                 <tr>
@@ -354,7 +354,7 @@
                         <input type="hidden" id="id_item-__prefix0__-detail-__prefix1__-time-0-use_yn" name="item-__prefix0__-detail-__prefix1__-time-0-use_yn" value="Y">
                         __prefix0__
                     </th>
-                    <td id="item-__prefix0__-content-0-detail"></td>
+                    <td id="item-__prefix0__-content-__prefix1__-detail"></td>
                     <td>
                         <div class="input-group mb-3">
                             <select id="id_item-__prefix0__-detail-__prefix1__-time-0-start_day" name="item-__prefix0__-detail-__prefix1__-time-0-start_day" class="form-select">
@@ -456,7 +456,6 @@
             deleteItem.addEventListener("click", function(event) {
                 event.currentTarget.closest("li").remove();
 
-                let formNum = parseInt(totalForms0.value);
                 const match = event.currentTarget.id.match(/^id_item-(\d+)-DELETE$/);
                 if (match) {
                     const index = Number(match[1]);
@@ -464,9 +463,12 @@
                     let itemContainer = document.getElementById(`item-container1-${index}`);
                     itemContainer.remove();
 
-                    let currentFormNum = parseInt(totalForms0.value);
-                    totalForms0.value = currentFormNum - 1;
+                    let formContainer = document.getElementById(`form-container2-${index}`);
+                    formContainer.remove();
                 }
+
+                let currentFormNum = parseInt(totalForms0.value);
+                totalForms0.value = currentFormNum - 1;
             });
             const itemContent = newLiRow.querySelector(".item-content");
             itemContent.addEventListener("input", function(event) {
@@ -506,21 +508,8 @@
             tempDetail.innerHTML = newDetailForm;
             const newDivRow = tempDetail.querySelector("div");
             newDivRow.style.display = ""; // 보이게
+
             const addItemDetail = newDivRow.querySelector(".addItemDetail");
-
-            // 새로운 행 DOM으로 삽입
-            const emptyPrefixContainer = document.querySelector("#empty-form-__prefix0__ ul");
-
-            let emptyPrefixForm = document.getElementById(`empty-form-__prefix0__-detail`);
-            const newPrefixRow = emptyPrefixForm.cloneNode(true); // li 전체 복제
-            let newPrefixForm = newPrefixRow.outerHTML.replace(/__prefix0__/g, formNum);
-
-            // 새로운 행 DOM으로 삽입
-            const tempPrefix = document.createElement("ul");
-            tempPrefix.innerHTML = newPrefixForm;
-            const newPrefixLiRow = tempPrefix.querySelector("li");
-            emptyPrefixContainer.appendChild(newPrefixLiRow);
-
             addItemDetail.addEventListener("click", function(event) {
                 const index = event.currentTarget.id.replace("addItemDetail", "");
 
@@ -542,8 +531,30 @@
                 deleteItemDetail.addEventListener("click", function(event) {
                     event.currentTarget.closest("li").remove();
 
+                    const match = event.currentTarget.id.match(/^id_item-(\d+)-detail-(\d+)-DELETE$/);
+                    if (match && match.length === 3) {
+                        const index = Number(match[1]);
+                        const detailIndex = Number(match[2]);
+
+                        let formContainer = document.getElementById(`form-container2-${index}-${detailIndex}`);
+                        formContainer.remove();
+                    }
+
                     let currentFormNum = parseInt(totalForms.value);
                     totalForms.value = currentFormNum - 1;
+                });
+
+                const itemContent = newLiRow.querySelector(".item-content");
+                itemContent.addEventListener("input", function(event) {
+                    const match = event.currentTarget.id.match(/^id_item-(\d+)-detail-(\d+)-content$/);
+                    if (match && match.length === 3) {
+                        const index = Number(match[1]);
+                        const detailIndex = Number(match[2]);
+                        let itemContent = document.getElementById(`item-${index}-content-${detailIndex}-detail`);
+                        if (itemContent) {
+                            itemContent.textContent = event.currentTarget.value;
+                        }
+                    }
                 });
 
                 formContainer.appendChild(newLiRow);
@@ -557,6 +568,7 @@
                 let emptyFormDetailTime = document.getElementById("empty-form-detail-time");
                 const newDetailTimeRow = emptyFormDetailTime.cloneNode(true); // li 전체 복제
                 newDetailTimeRow.removeAttribute("id");             // id 속성 제거
+                newDetailTimeRow.setAttribute("id", `form-container2-${index}-${formNum}`);             // id 속성 추가
                 let newDetailTimeForm = newDetailTimeRow.outerHTML.replace(/__prefix0__/g, index).replace(/__prefix1__/g, formNum);
 
                 // 새로운 행 DOM으로 삽입
@@ -564,8 +576,8 @@
                 tempDetailTime.innerHTML = newDetailTimeForm;
                 const newDivTableRow = tempDetailTime.querySelector("div");
                 newDivTableRow.style.display = ""; // 보이게
-                const addItemDetailTime = newDivTableRow.querySelector(".addItemDetailTime");
 
+                const addItemDetailTime = newDivTableRow.querySelector(".addItemDetailTime");
                 addItemDetailTime.addEventListener("click", function(event) {
                     const match = event.currentTarget.id.match(/(\d+)-(\d+)$/);
                     if (match && match.length == 3) {
@@ -604,6 +616,32 @@
                 formContainer2__prefix0__.appendChild(newDivTableRow);
             });
 
+            const detailItemContent = newDivRow.querySelector(".item-content");
+            detailItemContent.addEventListener("input", function(event) {
+                const match = event.currentTarget.id.match(/^id_item-(\d+)-detail-(\d+)-content$/);
+                if (match && match.length === 3) {
+                    const index = Number(match[1]);
+                    const detailIndex = Number(match[2]);
+                    let itemContent = document.getElementById(`item-${index}-content-${detailIndex}-detail`);
+                    if (itemContent) {
+                        itemContent.textContent = event.currentTarget.value;
+                    }
+                }
+            });
+
+            // 새로운 행 DOM으로 삽입
+            const emptyPrefixContainer = document.querySelector("#empty-form-__prefix0__ ul");
+
+            let emptyPrefixForm = document.getElementById(`empty-form-__prefix0__-detail`);
+            const newPrefixRow = emptyPrefixForm.cloneNode(true); // li 전체 복제
+            let newPrefixForm = newPrefixRow.outerHTML.replace(/__prefix0__/g, formNum);
+
+            // 새로운 행 DOM으로 삽입
+            const tempPrefix = document.createElement("ul");
+            tempPrefix.innerHTML = newPrefixForm;
+            const newPrefixLiRow = tempPrefix.querySelector("li");
+            emptyPrefixContainer.appendChild(newPrefixLiRow);
+
             formContainer1.appendChild(newDivRow);
 
             const formContainer2__prefix0__ = document.createElement("div");
@@ -613,6 +651,7 @@
             let emptyFormDetailTime = document.getElementById("empty-form-detail-time");
             const newDetailTimeRow = emptyFormDetailTime.cloneNode(true); // li 전체 복제
             newDetailTimeRow.removeAttribute("id");             // id 속성 제거
+            newDetailTimeRow.setAttribute("id", `form-container2-${formNum}-0`);             // id 속성 추가
             let newDetailTimeForm = newDetailTimeRow.outerHTML.replace(/__prefix0__/g, formNum).replace(/__prefix1__/g, 0);
 
             // 새로운 행 DOM으로 삽입
@@ -620,8 +659,8 @@
             tempDetailTime.innerHTML = newDetailTimeForm;
             const newDivTableRow = tempDetailTime.querySelector("div");
             newDivTableRow.style.display = ""; // 보이게
-            const addItemDetailTime = newDivTableRow.querySelector(".addItemDetailTime");
 
+            const addItemDetailTime = newDivTableRow.querySelector(".addItemDetailTime");
             addItemDetailTime.addEventListener("click", function(event) {
                 const match = event.currentTarget.id.match(/(\d+)-(\d+)$/);
                 if (match && match.length == 3) {
@@ -697,12 +736,26 @@
                 temp.innerHTML = newForm;
                 const newLiRow = temp.querySelector("li");
                 newLiRow.style.display = "flex"; // 보이게
+
                 const deleteItemDetail = newLiRow.querySelector(".deleteItemDetail");
                 deleteItemDetail.addEventListener("click", function(event) {
                     event.currentTarget.closest("li").remove();
 
                     let currentFormNum = parseInt(totalForms.value);
                     totalForms.value = currentFormNum - 1;
+                });
+
+                const itemContent = newLiRow.querySelector(".item-content");
+                itemContent.addEventListener("input", function(event) {
+                    const match = event.currentTarget.id.match(/^id_item-(\d+)-detail-(\d+)-content$/);
+                    if (match && match.length === 3) {
+                        const index = Number(match[1]);
+                        const detailIndex = Number(match[2]);
+                        let itemContent = document.getElementById(`item-${index}-content-${detailIndex}-detail`);
+                        if (itemContent) {
+                            itemContent.textContent = event.currentTarget.value;
+                        }
+                    }
                 });
 
                 formContainer.appendChild(newLiRow);
@@ -716,6 +769,7 @@
                 let emptyFormDetailTime = document.getElementById("empty-form-detail-time");
                 const newDetailTimeRow = emptyFormDetailTime.cloneNode(true); // li 전체 복제
                 newDetailTimeRow.removeAttribute("id");             // id 속성 제거
+                newDetailTimeRow.setAttribute("id", `form-container2-${index}-${formNum}`);             // id 속성 추가
                 let newDetailTimeForm = newDetailTimeRow.outerHTML.replace(/__prefix0__/g, index).replace(/__prefix1__/g, formNum);
 
                 // 새로운 행 DOM으로 삽입
