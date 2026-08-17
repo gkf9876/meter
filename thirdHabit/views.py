@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.forms import modelformset_factory
 from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from django.utils import timezone
+from datetime import datetime, timedelta
 
 from common.models import File
 from common.views import move_temp_images_to_uploads, delete_unused_images
@@ -66,7 +67,48 @@ def detail(request, thirdHabit_id):
                 prefix=f'item-{index}-detail-{detailIndex}-time',
                 queryset=detailTime_queryset
             )
-    context = {'thirdHabit': thirdHabit, 'formset': formset, 'detail_formsets': detail_formsets, 'detailTime_formsets': detailTime_formsets}
+
+    calendar_events = []
+    DAY_OFFSET = {
+        'SUN': 1,
+        'MON': 2,
+        'TUE': 3,
+        'WED': 4,
+        'THU': 5,
+        'FRI': 6,
+        'SAT': 7,
+    }
+    for item in thirdHabit.item.filter(use_yn='Y'):
+        for detail in item.detailItem.filter(use_yn='Y'):
+            for detail_time in detail.detailTimeItem.filter(use_yn='Y'):
+                start_date = thirdHabit.start_date + timedelta(
+                    days=DAY_OFFSET[detail_time.start_day]
+                )
+                start_datetime = datetime.combine(
+                    start_date,
+                    detail_time.start_time
+                )
+                end_date = thirdHabit.start_date + timedelta(
+                    days=DAY_OFFSET[detail_time.end_day]
+                )
+                end_datetime = datetime.combine(
+                    end_date,
+                    detail_time.end_time
+                )
+                calendar_events.append({
+                    'id': detail_time.id,
+                    'title': detail.content,
+                    'start': str(start_datetime),
+                    'end': str(end_datetime),
+                    'order': 1,
+                })
+    context = {
+        'thirdHabit': thirdHabit
+        , 'formset': formset
+        , 'detail_formsets': detail_formsets
+        , 'detailTime_formsets': detailTime_formsets
+        , 'calendar_events': calendar_events
+    }
     return render(request, 'thirdHabit/detail.html', context)
 
 @login_required(login_url='common:login')
@@ -114,16 +156,22 @@ def create(request):
             thirdHabit.create_date = timezone.now()
             thirdHabit.save()
             for index, item_form in enumerate(formset):
+                if item_form.instance.pk is None and not item_form.has_changed():
+                    continue
                 item = item_form.save(commit=False)
                 item.update_date = timezone.now()
                 item.save()
                 thirdHabit.item.add(item)
                 for detailIndex, detailItem_form in enumerate(detail_formsets[index]):
+                    if detailItem_form.instance.pk is None and not detailItem_form.has_changed():
+                        continue
                     detail = detailItem_form.save(commit=False)
                     detail.update_date = timezone.now()
                     detail.save()
                     item.detailItem.add(detail)
                     for detailTimeItemIndex, detailTimeItem_form in enumerate(detailTime_formsets[index][detailIndex]):
+                        if detailTimeItem_form.instance.pk is None and not detailTimeItem_form.has_changed():
+                            continue
                         detailTimeItem = detailTimeItem_form.save(commit=False)
                         detailTimeItem.update_date = timezone.now()
                         detailTimeItem.save()

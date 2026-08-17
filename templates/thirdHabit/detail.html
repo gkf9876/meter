@@ -2,6 +2,16 @@
 {% load static %}
 {% load thirdHabit_filter %}
 {% block content %}
+<!-- STANDARD JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/all/global.js"></script>
+
+<!-- THEME JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/themes/monarch/global.js"></script>
+
+<!-- STYLESHEETS -->
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/skeleton.css' rel='stylesheet' />
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/themes/monarch/theme.css' rel='stylesheet' />
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/themes/monarch/palettes/purple.css' rel='stylesheet' />
 <div class="container my-3">
     <ul class="nav nav-tabs">
         <li class="nav-item">
@@ -44,6 +54,7 @@
         <div class="card-body">
             <div class="mb-3">
                 <div id="form-container0">
+                    <input type="hidden" name="start_date" id="start_date" value="{{ thirdHabit.start_date|date:'Y-m-d' }}">
                     <ul class="list-group mb-3">
                         {% for form in formset %}
                             <li class="list-group-item">{{ form.content.value|default_if_none:'' }}</li>
@@ -83,7 +94,7 @@
                     {% endfor %}
                 </div>
             </div>
-            <div class="mb-3">
+            <div class="mb-3" style="display: none">
                 <div id="form-container2">
                     {% for form in formset %}
                         {% with item=form.instance %}
@@ -156,6 +167,12 @@
                         {% endwith %}
                         {% endwith %}
                     {% endfor %}
+                </div>
+            </div>
+            <div class="mb-3">
+                <div id="form-container3">
+                    {{ calendar_events|json_script:"calendar-events-data" }}
+                    <div id="calendar"></div>
                 </div>
             </div>
             <div class="card-text">{{ thirdHabit.content|safe }}</div>
@@ -243,6 +260,26 @@
 {% endblock %}
 {% block script %}
 <script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        const initialDate = document.getElementById('start_date').value;
+        const events = JSON.parse(
+            document.getElementById('calendar-events-data').textContent
+        );
+        var calendarEl = document.getElementById("calendar");
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            timeZone: "UTC",
+            initialView: 'timeGridWeek',
+            initialDate: initialDate,
+            headerToolbar: {
+                left: 'prev,next',
+                center: 'title',
+                right: 'timeGridWeek,timeGridDay' // user can switch between the two
+            },
+			events: events, // 이벤트 정의
+        });
+        calendar.render();
+    });
+
     tinymce.init({
         license_key: 'gpl',
         selector:'#content',

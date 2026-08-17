@@ -43,6 +43,7 @@ class ThirdHabit(models.Model):
     content = HTMLField()
     use_yn = models.CharField(max_length=2, default='Y')
     notice_yn = models.BooleanField(default=False)
+    start_date = models.DateTimeField()
     create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(null=True, blank=True)
     item = models.ManyToManyField(ThirdHabitItem, related_name='item_thirdHabit')

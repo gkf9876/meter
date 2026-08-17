@@ -7,8 +7,9 @@ class ThirdHabitForm(forms.ModelForm):
 
     class Meta:
         model = ThirdHabit
-        fields = ['subject', 'content', 'notice_yn']
+        fields = ['start_date', 'subject', 'content', 'notice_yn']
         labels = {
+            'start_date': '시작날짜',
             'subject': '제목',
             'content': '내용',
             'notice_yn': '공지여부',
