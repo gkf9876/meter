@@ -299,6 +299,7 @@
             <td>
                 <div class="input-group mb-3">
                     <select id="id_item-__prefix0__-detail-__prefix1__-time-__prefix2__-start_day." name="item-__prefix0__-detail-__prefix1__-time-__prefix2__-start_day" class="form-select" >
+                        <option value="">요일선택</option>
                         <option value="MON">월요일</option>
                         <option value="TUE">화요일</option>
                         <option value="WED">수요일</option>
@@ -313,6 +314,7 @@
             <td>
                 <div class="input-group mb-3">
                     <select id="id_item-__prefix0__-detail-__prefix1__-time-__prefix2__-end_day" name="item-__prefix0__-detail-__prefix1__-time-__prefix2__-end_day" class="form-select" >
+                        <option value="">요일선택</option>
                         <option value="MON">월요일</option>
                         <option value="TUE">화요일</option>
                         <option value="WED">수요일</option>
@@ -901,16 +903,19 @@
         Array.from(deleteItemDetailTime_elements).forEach(function(element){
             element.addEventListener('click', function(){
                 const row = this.closest("tr");
+                const id = row.querySelector(`input[name$="-id"]`);
                 const useYn = row.querySelector(`input[name$="-use_yn"]`);
 
-                if (row.classList.contains("list-group-item-danger")) {
-                    // 삭제 해제
-                    useYn.value = "Y";
-                    row.classList.remove("list-group-item-danger");
-                } else {
-                    // 삭제 처리
-                    useYn.value = "N";
-                    row.classList.add("list-group-item-danger");
+                if(id.value != null && id.value != ""){
+                    if (row.classList.contains("table-danger")) {
+                        // 삭제 해제
+                        useYn.value = "Y";
+                        row.classList.remove("table-danger");
+                    } else {
+                        // 삭제 처리
+                        useYn.value = "N";
+                        row.classList.add("table-danger");
+                    }
                 }
             });
         });
